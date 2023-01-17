@@ -11,3 +11,6 @@
 
 # Node.js files
 node_modules/
+
+# TypeScript Node.js files
+dist/

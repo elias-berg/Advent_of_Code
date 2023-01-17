@@ -14,12 +14,12 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 
 ### 2022
 
-| Day  | Name                                  | Lang.   | Day  | Name                                | Lang.   |
-| ---- | ------------------------------------- | ------- | ---- | ----------------------------------- | ------- |
-| *1*  | [Calorie Counting](./2022/1/)         | Clojure | *14* | [Regolith Reservoir](./2022/14/)    | Node.js |
-| *2*  | [Rock Paper Scissors](./2022/2/)      | Python  | *15* | [Beacon Exclusion Zone](./2022/15/) | Clojure |
-| *3*  | [Rucksack Reorganization](./2022/3/)  | Node.js | *16* | [Proboscidea Volcanium](./2022/16/) | C#      |
-| *4*  | [Camp Cleanup](./2022/4/)             | Java    |
+| Day  | Name                                  | Lang.   | Day  | Name                                | Lang.      |
+| ---- | ------------------------------------- | ------- | ---- | ----------------------------------- | -------    |
+| *1*  | [Calorie Counting](./2022/1/)         | Clojure | *14* | [Regolith Reservoir](./2022/14/)    | Node.js    |
+| *2*  | [Rock Paper Scissors](./2022/2/)      | Python  | *15* | [Beacon Exclusion Zone](./2022/15/) | Clojure    |
+| *3*  | [Rucksack Reorganization](./2022/3/)  | Node.js | *16* | [Proboscidea Volcanium](./2022/16/) | C#         |
+| *4*  | [Camp Cleanup](./2022/4/)             | Java    | *17* | [Pyroclastic Flow](./2022/17)       | Typescript |
 | *5*  | [Supply Stacks](./2022/5/)            | Node.js |
 | *6*  | [Tuning Trouble](./2022/6/)           | M       |
 | *7*  | [No Space Left On Device](./2022/7/)  | Clojure |

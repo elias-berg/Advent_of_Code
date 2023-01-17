@@ -1,0 +1,64 @@
+body {
+  display: flex;
+  flex-direction: column;
+  max-height: 98%; /* Give some space at the bottom */
+}
+
+h2 {
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+#towerContainer {
+  margin-top: 5px;
+  overflow: auto;
+}
+
+#tower {
+  border-collapse: collapse;
+  border: 1px solid black;
+  font-size: 16;
+  width: 100px;
+  margin: auto;
+  table-layout: fixed;
+  border-top: none; 
+  border-left: 5px solid black;
+  border-right: 5px solid black;
+  border-bottom: 5px solid black;
+
+  & td {
+    padding: 0;
+    text-align: center;
+  }
+}
+
+.controls {
+  display: flex;
+  width: 100%;
+
+  /* FKA 'controlSet'  */
+  & > div {
+    border: 2px solid black;
+    padding: 5px;
+    margin-right: 10px;
+  }
+}
+
+#heightCounter, #blockCounter {
+  border: 1px dotted gray;
+  padding: 0 10 2 10;
+  display: inline;
+}
+
+/* Some visual appeal */
+td[data-type=block] {
+  background-color: magenta;
+}
+
+td[data-type=tower] {
+  background-color: gray !important;
+}
+
+button[data-type=picked] {
+  background-color: lightgreen;
+}

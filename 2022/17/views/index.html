@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <title>AoC 2022 - 17</title>
+    <script type="module" src="Solution.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="index.css">
+  </head>
+  <body>
+    <h2>Advent of Code - 2022 Day 17</h2>
+    <div class="controls">
+      <div>
+        <span>Part</span>
+        <button id="pick1">1</button>
+        <!--<button id="pick2" onclick="pick(false)">2</button>-->
+      </div>
+      <div>
+        <span>Load</span>
+        <button id="load1" disabled>Load Sample Input</button>
+        <button id="load2" disabled>Load Main Input</button>
+      </div>
+      <div id="run">
+        <span>Run</span>
+        <button id="run1" disabled>Animate</button>
+        <button id="run2" disabled>Skip to Solution</button>
+      </div>
+      <div>
+        <span>Block Count</span>
+        <p id="blockCounter">0</p>
+      </div>
+      <div>
+        <span>Tower Height</span>
+        <p id="heightCounter">0</p>
+      </div>
+      <div>
+        <button id="reset">Reset</button>
+      </div>
+    </div>
+    <div id="towerContainer">
+      <table id="tower"></table>
+    </div>
+  </body>
+</html>

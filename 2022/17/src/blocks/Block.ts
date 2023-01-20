@@ -1,4 +1,5 @@
 import Tower from "../Tower.js";
+import CycleTracker from "../CycleTracker.js";
 
 export abstract class Block {
   public IsAddedToTower = false; // End-state signaller
@@ -9,15 +10,32 @@ export abstract class Block {
   protected Width: number; // How many positions wide the block is
   protected Height: number; // How many positions tall the block is
 
-  // Here we have an index-sensitive list of positions. It needs to be organized
-  // in a way that we can move all pieces down and left by iterating from the
-  // start to the end, or move all right by iterating from the end to the start.
+  // All of the positions of each piece of the block
   protected Positions: number[][];
+
+  // Inheriting class defined block letter for cycle detection.
+  protected BlockKey: string;
+  // The directions the block is pushed left and right.
+  // Used to create a cycle-detection key.
+  private JetStreams: string;
+  // The number of downward movements the block undergoes.
+  // Used to create a cycle-detection key.
+  private PositionsMoved: number;
 
   constructor(tower: Tower) {
     this.Bottom = tower.TowerHeight + 3;
+
+    this.JetStreams = "";
+    this.PositionsMoved = 0;
   }
 
+  /**
+   * Helper function to get a position within the tower and set it as
+   * a piece of the current block.
+   * @param x The X-coordinate of the current block piece position.
+   * @param y The Y-coordinate of the current block piece position.
+   * @param tower The tower we're adding the block to.
+   */
   protected GetSetBlock(x: number, y: number, tower: Tower): void {
     if (y === tower.Top()) {
       tower.AppendTopRow();
@@ -28,78 +46,6 @@ export abstract class Block {
     curBlock.attr("data-type", "block");
     this.Positions.push([x, y]);
   }
-
-  public MoveDown(tower: Tower): void {
-    // If we've hit the floor
-    if (this.Bottom === 0) {
-      this.AddToTower(tower);
-      return;
-    }
-
-    // Need to see if we can even move down first
-    let canMove = true;
-
-    for (const curPosition of this.Positions) {
-      const x = curPosition[0];
-      const y = curPosition[1];
-      const nextBlock = tower.Get(x, y - 1);
-      // Only evaluate the next position if it's not a part of the current block
-      if (nextBlock.attr("data-type") !== "block") {
-        canMove = canMove && (nextBlock.text() === "-");
-      }
-    }
-
-    if (canMove) {
-      this.MovePositionsDown(tower);
-    } else {
-      this.AddToTower(tower);
-    }
-  }
-
-  private ShiftLeft(tower: Tower): void {
-    // Can't shift left
-    if (this.Left === 0) {
-      return;
-    }
-
-    let canMove = true;
-    for (const curPosition of this.Positions) {
-      const x = curPosition[0];
-      const y = curPosition[1];
-      const nextBlock = tower.Get(x - 1, y);
-      // Only evaluate the next position if it's not a part of the current block
-      if (nextBlock.attr("data-type") !== "block") {
-        canMove = canMove && (nextBlock.text() === "-");
-      }
-    }
-
-    if (canMove) {
-      this.ShiftPositionsLeft(tower);
-    }
-  }
-
-  private ShiftRight(tower: Tower): void {
-    // Can't shift right
-    if (this.Left + this.Width === Tower.TOWER_WIDTH) {
-      return;
-    }
-
-    let canMove = true;
-    for (const curPosition of this.Positions) {
-      const x = curPosition[0];
-      const y = curPosition[1];
-      const nextBlock = tower.Get(x + 1, y);
-      // Only evaluate the next position if it's not a part of the current block
-      if (nextBlock.attr("data-type") !== "block") {
-        canMove = canMove && (nextBlock.text() === "-");
-      }
-    }
-
-    if (canMove) {
-      this.ShiftPositionsRight(tower);
-    }
-  }
-
 
   /**
    * Handy function for all blocks to call the appropriate shift function.
@@ -115,23 +61,96 @@ export abstract class Block {
   }
 
   /**
-   * Once the block can't move any further, call this function.
-   * "One of us. One of us."
-   * @param tower The block tower we're adding the block to.
+   * Moves block one position down if nothing is blocking it.
+   * If the floor or another block is blocking it, then it becomes
+   * a part of the tower.
+   * @param tower The tower we're moving the block within/adding to.
    */
-  public AddToTower(tower: Tower) {
-    this.Positions.map((position: number[]) => {
-      const curBlock = tower.Get(position[0], position[1]);
-      curBlock.attr("data-type", "tower");
-    });
-
-    // Update the tower height
-    const blockHeight = this.Bottom + this.Height;
-    if (blockHeight > tower.TowerHeight) {
-      tower.TowerHeight = blockHeight;
+  public MoveDown(tower: Tower): void {
+    // If we've hit the floor
+    if (this.Bottom === 0) {
+      this.AddToTower(tower);
+      return;
     }
 
-    this.IsAddedToTower = true;
+    // Need to see if we can even move down first
+    let canMove = true;
+    for (const curPosition of this.Positions) {
+      const x = curPosition[0];
+      const y = curPosition[1];
+      const nextBlock = tower.Get(x, y - 1);
+      // Only evaluate the next position if it's not a part of the current block
+      if (nextBlock.attr("data-type") !== "block") {
+        canMove = canMove && (nextBlock.text() === "-");
+      }
+    }
+
+    if (canMove) {
+      this.PositionsMoved++; // For cycle detection
+      this.MovePositionsDown(tower);
+    } else {
+      this.AddToTower(tower);
+    }
+  }
+
+  /**
+   * Shifts the block one position to the left if nothing is blocking it.
+   * @param tower The tower we're shifting the block within.
+   */
+  private ShiftLeft(tower: Tower): void {
+    // Can't shift left
+    if (this.Left === 0) {
+      this.JetStreams += "!<";
+      return;
+    }
+
+    let canMove = true;
+    for (const curPosition of this.Positions) {
+      const x = curPosition[0];
+      const y = curPosition[1];
+      const nextBlock = tower.Get(x - 1, y);
+      // Only evaluate the next position if it's not a part of the current block
+      if (nextBlock.attr("data-type") !== "block") {
+        canMove = canMove && (nextBlock.text() === "-");
+      }
+    }
+
+    if (canMove) {
+      this.JetStreams += "<"; // For cycle detection
+      this.ShiftPositionsLeft(tower);
+    } else {
+      this.JetStreams += "!<";
+    }
+  }
+
+  /**
+   * Shifts the block one position to the right if nothing is blocking it.
+   * @param tower The tower we're shifting the block within.
+   */
+  private ShiftRight(tower: Tower): void {
+    // Can't shift right
+    if (this.Left + this.Width === Tower.TOWER_WIDTH) {
+      this.JetStreams += "!>";
+      return;
+    }
+
+    let canMove = true;
+    for (const curPosition of this.Positions) {
+      const x = curPosition[0];
+      const y = curPosition[1];
+      const nextBlock = tower.Get(x + 1, y);
+      // Only evaluate the next position if it's not a part of the current block
+      if (nextBlock.attr("data-type") !== "block") {
+        canMove = canMove && (nextBlock.text() === "-");
+      }
+    }
+
+    if (canMove) {
+      this.JetStreams += ">";
+      this.ShiftPositionsRight(tower);
+    } else {
+      this.JetStreams += "!>";
+    }
   }
 
   /**
@@ -189,5 +208,32 @@ export abstract class Block {
       this.Positions[i] = [curPosition[0] + 1, curPosition[1]];
     }
     this.Left++;
+  }
+
+  /**
+   * Once the block can't move any further, call this function.
+   * "One of us. One of us."
+   * @param tower The block tower we're adding the block to.
+   */
+  public AddToTower(tower: Tower) {
+    this.Positions.map((position: number[]) => {
+      const curBlock = tower.Get(position[0], position[1]);
+      curBlock.attr("data-type", "tower");
+    });
+
+    // Update the tower height
+    let heightDiff = 0;
+    const blockHeight = this.Bottom + this.Height;
+    if (blockHeight > tower.TowerHeight) {
+      heightDiff = blockHeight - tower.TowerHeight;
+      tower.TowerHeight = blockHeight;
+    }
+
+    this.IsAddedToTower = true;
+
+    // Once we've added to the tower, we can check and see if we've moved this
+    // block the same directions and distance before to see if we have a cycle!
+    const key = this.BlockKey + this.JetStreams + this.PositionsMoved;
+    CycleTracker.Add(key, heightDiff);
   }
 }

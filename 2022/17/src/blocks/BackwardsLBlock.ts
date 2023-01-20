@@ -7,6 +7,7 @@ export class BackwardsLBlock extends Block {
 
     this.Height = 3;
     this.Width = 3;
+    this.BlockKey = "L";
 
     this.Positions = [];
     // Bottom-left

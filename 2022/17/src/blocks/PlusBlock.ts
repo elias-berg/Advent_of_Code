@@ -7,6 +7,7 @@ export class PlusBlock extends Block {
 
     this.Height = 3;
     this.Width = 3;
+    this.BlockKey = "P";
 
     this.Positions = [];
     // Bottom-middle

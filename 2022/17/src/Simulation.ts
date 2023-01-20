@@ -3,10 +3,13 @@
 import Tower from "./Tower.js";
 import { Block } from "./blocks";
 import BlockFactory from "./BlockFactory.js";
+import CycleTracker from "./CycleTracker.js";
 
 class BlockSimulation {
-  private static readonly BLOCK_GOAL = 2022;
   private static readonly ANIMATION_SPEED = 0; // Settable for debugging
+
+  private IsPartOne: boolean;
+  private BlockGoal: number;
 
   // Main pieces at play
   private Tower: Tower;
@@ -25,12 +28,19 @@ class BlockSimulation {
   private Timer: NodeJS.Timeout | null;
 
   // Construct the tower and backing array
-  constructor(jetStr: string, towerRoot: JQuery<HTMLElement>) {
+  constructor(jetStr: string, towerRoot: JQuery<HTMLElement>, partOne: boolean) {
     this.JetString = jetStr;
     this.JetIndex = 0;
     this.JetModulo = jetStr.length;
 
     this.BlockCount = 0;
+
+    this.IsPartOne = partOne;
+    if (this.IsPartOne) {
+      this.BlockGoal = 2022;
+    } else {
+      this.BlockGoal = 1_000_000_000_000; // Oof! 1 Trillion
+    }
 
     this.Tower = new Tower(towerRoot);
   }
@@ -41,6 +51,7 @@ class BlockSimulation {
     }
     // We don't clear anything else since we'll create a new instance of
     // the tower object when the user selects an input file.
+    CycleTracker.Reset();
   }
 
   public MoveBlocks(fastMode: boolean): void {
@@ -49,14 +60,19 @@ class BlockSimulation {
       if (!this.CurrentBlock) {
         this.CreateBlock();
       }
-      if (this.BlockCount === BlockSimulation.BLOCK_GOAL && this.CurrentBlock.IsAddedToTower) {
+      if (this.BlockCount === this.BlockGoal && this.CurrentBlock.IsAddedToTower) {
         this.ShowFinalHeight();
       } else {
         this.StartSequence(); // Continue onwards
       }
     } else {
-      while (this.BlockCount !== BlockSimulation.BLOCK_GOAL) {
+      while (this.BlockCount !== this.BlockGoal) {
         this.MoveSingleBlock();
+        // If Part 2, then skip to the end!
+        if (!this.IsPartOne && CycleTracker.DetectedCycle) {
+          this.SkipToTrillionBlockCount();
+          return;
+        }
       }
       this.ShowFinalHeight();
     }
@@ -66,8 +82,9 @@ class BlockSimulation {
    * Simple wrapper around the end-state.
    */
   private ShowFinalHeight(): void {
-    this.TowerHeightElement.text(this.Tower.TowerHeight);
-    alert("The final tower height: " + this.Tower.TowerHeight);
+    const towerHeight = this.Tower.TowerHeight;
+    this.TowerHeightElement.text(towerHeight);
+    alert("The final tower height: " + towerHeight);
   }
 
   /**
@@ -75,6 +92,12 @@ class BlockSimulation {
    */
   private StartSequence(): void {
     if (this.CurrentBlock.IsAddedToTower) {
+      // First see if we detected a cycle
+      if (!this.IsPartOne && CycleTracker.DetectedCycle) {
+        this.SkipToTrillionBlockCount();
+        return;
+      }
+
       this.TowerHeightElement.text(this.Tower.TowerHeight); // Update the latest height
       this.CreateBlock();
     }
@@ -128,6 +151,26 @@ class BlockSimulation {
     this.BlockCount++;
 
     this.BlockCountElement.text(this.BlockCount);
+  }
+
+  private SkipToTrillionBlockCount(): void {
+    const cycle = CycleTracker.DetectedCycle;
+    const heightPerCycle = cycle.Height;
+
+    const blocksLeft = this.BlockGoal - this.BlockCount;
+    const cycleRemainder = blocksLeft % cycle.Length;
+    const cyclesLeft = (blocksLeft - cycleRemainder) / cycle.Length;
+
+    this.Tower.TowerHeight += (heightPerCycle * cyclesLeft);
+
+    // Play out the remainder
+    for (let i = 0; i < cycleRemainder; i++) {
+      this.Tower.TowerHeight += cycle.Moves[i].Height;
+    }
+
+    this.BlockCount = this.BlockGoal;
+    this.BlockCountElement.text(this.BlockCount);
+    this.ShowFinalHeight();
   }
 }
 

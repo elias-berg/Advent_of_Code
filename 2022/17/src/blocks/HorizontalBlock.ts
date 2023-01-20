@@ -7,6 +7,7 @@ export class HorizontalBlock extends Block {
 
     this.Height = 1;
     this.Width = 4;
+    this.BlockKey = "H";
 
     this.Positions = [];
     for (let i = 0; i < this.Width; i++) {

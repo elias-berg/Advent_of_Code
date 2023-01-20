@@ -7,6 +7,7 @@ export class VerticalBlock extends Block {
 
     this.Height = 4;
     this.Width = 1;
+    this.BlockKey = "V";
 
     this.Positions = [];
     for (let i = 0; i < this.Height; i++) {

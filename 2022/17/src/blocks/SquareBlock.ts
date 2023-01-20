@@ -7,6 +7,7 @@ export class SquareBlock extends Block {
 
     this.Height = 2;
     this.Width = 2;
+    this.BlockKey = "S";
 
     this.Positions = [];
     // Hard-coded because I somehow couldn't write the double-nested loop right and

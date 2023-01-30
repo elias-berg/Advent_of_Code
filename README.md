@@ -21,7 +21,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *3*  | [Rucksack Reorganization](./2022/3/)  | Node.js | *16* | [Proboscidea Volcanium](./2022/16/) | C#         |
 | *4*  | [Camp Cleanup](./2022/4/)             | Java    | *17* | [Pyroclastic Flow](./2022/17/)      | Typescript |
 | *5*  | [Supply Stacks](./2022/5/)            | Node.js | *18* | [Boiling Boulders](./2022/18/)      | Python     |
-| *6*  | [Tuning Trouble](./2022/6/)           | M       |
+| *6*  | [Tuning Trouble](./2022/6/)           | M       | *19* | [Not Enough Minerals](./2022/19/)   | Go         |
 | *7*  | [No Space Left On Device](./2022/7/)  | Clojure |
 | *8*  | [Treetop Tree House](./2022/8/)       | Python  |
 | *9*  | [Rope Bridge](./2022/9/)              | C#      |

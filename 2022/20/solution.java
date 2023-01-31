@@ -14,6 +14,14 @@
 // Given the input of numbers, unencrypt the file as described by the rules
 // and then find the 1000th, 2000th, and 3000th number after the 0.
 // What is the sum of these three numbers?
+//
+// Part 2 -
+// You realize that you actually need to multiply each number in the sequence
+// by the decryption key, 811589153, before decrypting the sequence. But then
+// you also need to mix the numbers 10 times, using the same order the numbers
+// originally appeared each time.
+// What's the sum of the 1000th, 2000th, and 3000th numbers after the 0 given
+// the new rules?
 
 // To run:
 // - Make sure you have a JDK installed.
@@ -31,8 +39,8 @@ public class solution {
   public class Node {
     public Node Prev;
     public Node Next;
-    public int Value;
-    public Node(int v) {
+    public long Value;
+    public Node(long v) {
       this.Value = v;
     }
     /**
@@ -40,7 +48,7 @@ public class solution {
      * @param v Next node value.
      * @return The "Next" node.
      */
-    public Node SetNext(int v) {
+    public Node SetNext(long v) {
       Node next = new Node(v);
       this.Next = next;
       next.Prev = this;
@@ -78,17 +86,28 @@ public class solution {
     }
   }
 
+  // Part 2 "decryption key"
+  public static final int DECRYPTION_KEY = 811_589_153;
+
   // The values of the encrypted file in the order that they originally appear.
   public ArrayList<Node> OrderedValues;
 
   // O(1) access to the "start" Node for the decryption reading.
   public Node Zero;
 
+  private long GetNextLong(Scanner s, boolean part2) {
+    long val = s.nextLong();
+    if (part2) {
+      val *= DECRYPTION_KEY;
+    }
+    return val;
+  }
+
   /**
    * Parses the input file into a Linked List and order-preserved array.
    * @param fileName Name of the file to parse.
    */
-  public void ParseInput(String fileName) {
+  public void ParseInput(String fileName, boolean part2) {
     this.OrderedValues = new ArrayList<Node>();
 
     File f = new File(fileName);
@@ -96,7 +115,7 @@ public class solution {
     try {
         s = new Scanner(f);
 
-        int val = s.nextInt();
+        long val = this.GetNextLong(s, part2);
         Node first = new Node(val);
         this.OrderedValues.add(first);
         if (val == 0) {
@@ -104,8 +123,8 @@ public class solution {
         }
 
         Node current = first;
-        while (s.hasNextInt()) {
-          val = s.nextInt();
+        while (s.hasNextLong()) {
+          val = this.GetNextLong(s, part2);
           current = current.SetNext(val);
           if (val == 0) {
             this.Zero = current;
@@ -129,9 +148,10 @@ public class solution {
    * Shift each node in the order they appeared within the Linked List.
    */
   public void Decrypt() {
-    //int size = this.OrderedValues.size();
+    int size = this.OrderedValues.size() - 1;
     for (Node n : this.OrderedValues) {
-      int val = n.Value;
+      long val = n.Value;
+      val = val % size;
 
       if (val != 0) {
         if (val < 0) { // Shift left
@@ -150,11 +170,10 @@ public class solution {
   }
 
   /**
-   * Output the solution for Part 1:
    * Sum of the values at the 1,000th, 2,000th, and 3,000th positions.
    */
-  public void Part1() {
-    int sum = 0;
+  public long GetValues() {
+    long sum = 0;
     int count = 0;
     Node current = this.Zero;
     // Yeah it's a bit brutish, but we might as well for ease of coding
@@ -163,12 +182,11 @@ public class solution {
       current = current.Next;
 
       if (count == 1000 || count == 2000 || count == 3000) {
-        //System.err.println("Found " + current.Value);
+        //System.err.println("Found " + current.Value); // Debug print
         sum += current.Value;
       }
     }
-
-    System.err.println("Part 1: " + sum);
+    return sum;
   }
 
   /**
@@ -191,9 +209,20 @@ public class solution {
       fileName = "sample_input.txt";
     }
 
-    solution day20 = new solution();
-    day20.ParseInput(fileName);
-    day20.Decrypt();
-    day20.Part1();
+    // Part 1
+    solution day20p1 = new solution();
+    day20p1.ParseInput(fileName, false);
+    day20p1.Decrypt();
+    long part1 = day20p1.GetValues();
+    System.out.println("Part 1: " + part1);
+
+    // Part 2
+    solution day20p2 = new solution();
+    day20p2.ParseInput(fileName, true);
+    for (int i = 0; i < 10; i++) {
+      day20p2.Decrypt();
+    }
+    long part2 = day20p2.GetValues();
+    System.out.println("Part 2: " + part2);
   }
 }

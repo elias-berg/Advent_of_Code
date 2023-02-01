@@ -29,3 +29,11 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *11* | [Monkey in the Middle](./2022/11)    | Java    |
 | *12* | [Hill Climbing Algorithm](./2022/12) | Go      |
 | *13* | [Distress Signal](./2022/13)         | Python  |
+
+### Scripts
+
+There's also a scripts directory that provides the following scripts and how to run them:
+
+`python3 ./scripts/create_template.py`
+
+*Creates a template for the year, day, and language I plan on using.*

@@ -10,6 +10,13 @@
 //
 // Part 1 -
 // What number will "root" yell?
+//
+// Part 2 -
+// There was a translation error. Apparently the operation yelled
+// by the "root" monkey was an equality operation. Turns out that
+// you're supposed to be the "humn" monkey and need to yell the
+// number that will cause the "root" monkey's equality be true.
+// What number does "humn" need to yell?
 
 // To run:
 // - "node solution.js"
@@ -29,10 +36,10 @@ class Monkey {
     } else {
       // There's an assumption that operation monkeys only mention two
       // other monkeys plus a math operation.
-      this.OtherMonkeys = 2;
       this.Left = operation[0];
       this.Op = operation[1];
       this.Right = operation[2];
+      this.OtherMonkeys = [this.Left, this.Right];
     }
   }
   
@@ -43,15 +50,17 @@ class Monkey {
     let name = monkey.Name;
     if (name == this.Left) {
       this.Left = monkey.Number;
+      this.CurValue = parseInt(this.Left); // Set the "current value" for Part 2
     } else if (name == this.Right) {
       this.Right = monkey.Number;
+      this.CurValue = parseInt(this.Right); // Set the "current value" for Part 2
     }
-
-    this.OtherMonkeys--;
+    
+    this.OtherMonkeys = this.OtherMonkeys.filter(x => x !== name);
 
     // If Left and Right are set, then tell the caller that this is
     // now a Number monkey!
-    if (this.OtherMonkeys == 0) {
+    if (this.OtherMonkeys.length === 0) {
       let evalStr = this.Left + this.Op + this.Right;
       this.Number = parseInt(eval(evalStr)); // Might be minimally faster if we remove 'eval'
       return true;
@@ -74,7 +83,6 @@ let recursiveSet = (monkeyDict, refDict, numMonkey) => {
       recursiveSet(monkeyDict, refDict, monkey);
     }
   }
-  delete refDict[numMonkey]; // Clean up that unused space
 }
 
 // Given the monkey and dependency dictionaries, see if we can pull any
@@ -128,6 +136,92 @@ let part1 = (monkeys) => {
   return root.Number;
 }
 
+// Solve for X given the operation, Y value, current value,
+// and what side of the operand X is on (only matters for - and /).
+let solveForX = (xIsRight, op, y, val) => {
+  if (op === "+") {
+    return (val - y);
+  } else if (op === "-") {
+    if (xIsRight) { // x is right of the op
+      return -1 * (val - y);
+    } else { // x is left of the op
+      return val + y;
+    }
+  } else if (op === "*") {
+    return val / y;
+  } else if (op === "/") {
+    if (xIsRight) {
+      return y / val;
+    } else { // Left is always easier
+      return val * y;
+    }
+  }
+  // If anything else...that would be wack
+}
+
+// Recursive function to apply the OPPOSITE operation to the current value
+// in order to solve for "humn"
+let recursiveSolve = (mDict, monkey, curValue) => {
+  // Useful debug print
+  //console.log(monkey.Name + " -> " + monkey.Left + " " + monkey.Op + " " + monkey.Right + " = " + curValue);
+
+  // Base case: we reach humn
+  if (monkey.Name === "humn") {
+    monkey.Number = curValue;
+  } else {
+    // First get the next unknown monkey. Note that we need the right/left side
+    // determined for the math operation
+    let unknownName = monkey.OtherMonkeys[0];
+    let xIsRight = unknownName === monkey.Right;
+    // curValue = # <op> ? --> curValue <opposite of op> # = ?
+    let newValue = solveForX(xIsRight, monkey.Op, monkey.CurValue, curValue);
+
+    recursiveSolve(mDict, mDict[unknownName], newValue)
+  }
+}
+
+// The plan is to solve the entire tree, except for everything from humn up to root
+let part2 = (monkeys) => {
+  let monkeyDict = {}; // Monkey name -> Monkey
+  let refDict = {}; // Monkey depended on name -> dictionary of dependent monkeys
+
+  let root = undefined;
+  let humn = undefined;
+
+  for (let monkey of monkeys) {
+    let cur = new Monkey(monkey);
+    let name = cur.Name;
+
+    if (name === "root") {
+      root = cur;
+    }
+    if (name === "humn") {
+      humn = cur;
+      continue;
+    }
+
+    // This time around, we DON'T want to add it for any other monkey to reference
+    monkeyDict[name] = cur;
+
+    // If this is a number monkey, we want to first see if there are any other monkeys
+    // that need this number
+    if (cur.Number) {
+      recursiveSet(monkeyDict, refDict, cur);
+    } else { // Force "humn" to not get evaluated
+      trySetMonkey(monkeyDict, refDict, cur, cur.Left);
+      trySetMonkey(monkeyDict, refDict, cur, cur.Right);
+    }
+  }
+
+  // Now add humn to the dictionary
+  monkeyDict[humn.Name] = humn;
+
+  // Now, let's start at "root" and work our way all the way back down to "humn"
+  recursiveSolve(monkeyDict, monkeyDict[root.OtherMonkeys[0]], root.CurValue)
+
+  return humn.Number;
+}
+
 ///////////////
 // Start Script
 
@@ -145,4 +239,8 @@ fs.readFile(fileName, (err, data) => {
   let val = part1(monkeys);
   let endPart1 = Date.now();
   console.log("Part 1: " + val + " (Ran in " + (endPart1 - start) + "ms)");
+
+  val = part2(monkeys);
+  let endPart2 = Date.now();
+  console.log("Part 2: " + val + " (Ran in " + (endPart2 - endPart1) + "ms)");
 });

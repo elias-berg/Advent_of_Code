@@ -1,4 +1,4 @@
-// Advent of Code 2022 Day 21
+// Advent of Code 2022 - Day 21
 // Monkey Math
 //
 // You re-encounter the monkeys who are either yelling a specific

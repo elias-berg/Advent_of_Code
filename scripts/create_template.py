@@ -102,7 +102,7 @@ os.chdir(day)
 #########################
 # Get the current problem
 
-p = subprocess.Popen(["curl", "https://adventofcode.com/" + year + "/day/" + day],
+p = subprocess.Popen(["curl", "https://adventofcode.com/" + year + "/day/" + day, "-s"],
   stdout=subprocess.PIPE,
   shell=False)
 html = str(p.stdout.read())
@@ -110,6 +110,7 @@ html = str(p.stdout.read())
 nameStartStr = "Day " + day + ": "
 nameLoc = [html.find(nameStartStr), html.find(" ---")]
 problemName = html[nameLoc[0] + len(nameStartStr):nameLoc[1]]
+print("--> Loaded day: \"" + problemName + "\"") # Print the name for display
 
 ##############################
 # Now create the template file
@@ -122,7 +123,7 @@ if "add" in supported_languages[lang]:
   file.write(supported_languages[lang]["addl"])
 # Write the standard template
 file.writelines(
-  [comment + " Advent of Code " + year + " Day " + day + "\n",
+  [comment + " Advent of Code " + year + " - Day " + day + "\n",
    comment + " " + problemName + "\n",
    comment + "\n",
    comment + " <Problem Statement>\n",
@@ -141,10 +142,13 @@ if "SESSION" in os.environ:
       "--cookie",
       "session=" + sessionID,
       "-o",
-      "input.txt"
+      "input.txt",
+      "-s",
+      "-w",
+      "--> Downloaded input.txt"
     ])
 else:
-  print("\nTo download specific problem inputs, add your Advent of Code" \
+  print("\nTo download specific problem inputs, add your Advent of Code " \
   "\"session\" cookie as an environment variable.\n")
 
 print("\n== DONE ==\n")

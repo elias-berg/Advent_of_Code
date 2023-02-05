@@ -24,7 +24,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *6*  | [Tuning Trouble](./2022/6)           | M          | *19* | [Not Enough Minerals](./2022/19)      | Go         |
 | *7*  | [No Space Left On Device](./2022/7)  | Clojure    | *20* | [Grove Positioning System](./2022/20) | Java       |
 | *8*  | [Treetop Tree House](./2022/8)       | Python     | *21* | [Monkey Math](./2022/21)              | Javascript |
-| *9*  | [Rope Bridge](./2022/9)              | C#         |
+| *9*  | [Rope Bridge](./2022/9)              | C#         | *22* | [Monkey Map](./2022/22)               | C++        |
 | *10* | [Cathode-Ray Tube](./2022/10)        | C          |
 | *11* | [Monkey in the Middle](./2022/11)    | Java       |
 | *12* | [Hill Climbing Algorithm](./2022/12) | Go         |

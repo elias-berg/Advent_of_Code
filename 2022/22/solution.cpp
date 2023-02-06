@@ -29,47 +29,10 @@
 #include <map>
 
 #include "Tile.h"
+#include "Grid.h"
 
 using namespace std;
 
-string toKey(int x, int y) {
-  return std::to_string(x) + "," + std::to_string(y);
-}
-
-Tile* getMappedTile(map<string, Tile*>* grid, int x, int y) {
-  Tile* t = NULL;
-  try {
-    t = grid->at(toKey(x, y));
-  } catch (out_of_range &oor) {
-    t = NULL;
-  }
-  return t;
-}
-
-Tile* line2Tiles(map<string, Tile*>* grid, int y, string line) {
-  Tile *first = NULL, *next;
-  for (int i = 0; i < line.length(); i++) {
-    char cur = line[i];
-    int x = i + 1; // Since the origin is 1,1
-
-    if (cur != ' ') {
-      next = new Tile(x, y, cur);
-      (*grid)[toKey(x, y)] = next;
-
-      // Set the first tile
-      if (first == NULL) {
-        first = next;
-      }
-    }
-  }
-
-  return first;
-}
-
-/**
- * There's surely a much better way to write this, but I don't really have the
- * mental capacity to even bother since I'm relearning C++ as-is.
- */
 char turn(char facing, char dir) {
   if (facing == '>') {
     return dir == 'R' ? 'v' : '^';
@@ -80,50 +43,6 @@ char turn(char facing, char dir) {
   } else { // Assuming it MUST be '^'
     return dir == 'R' ? '>' : '<';
   }
-}
-
-Tile* getNextSpace(map<string, Tile*>* grid, char facing, int x, int y) {
-  int xMod = 0;
-  int yMod = 0;
-  Tile* nextTile = NULL;
-  switch (facing) {
-    case '>':
-      xMod = -1;
-      nextTile = getMappedTile(grid, x+1, y);
-      break;
-    case 'v':
-      yMod = -1;
-      nextTile = getMappedTile(grid, x, y+1);
-      break;
-    case '<':
-      xMod = 1;
-      nextTile = getMappedTile(grid, x-1, y);
-      break;
-    default: // '^'
-      yMod = 1;
-      nextTile = getMappedTile(grid, x, y-1);
-      break;
-  }
-  // Return self if the next tile is actually a wall
-  if (nextTile != NULL && nextTile->GetType() == WALL) {
-    return getMappedTile(grid, x, y);
-  }
-  // Else, we hit an edge and need to wrap around
-  if (nextTile == NULL) {
-    int newX = x + xMod;
-    int newY = y + yMod;
-    Tile* wrappedTile = getMappedTile(grid, newX, newY);
-    while (wrappedTile != NULL) {
-      nextTile = wrappedTile;
-      newX += xMod;
-      newY += yMod;
-      wrappedTile = getMappedTile(grid, newX, newY);
-    }
-    if (nextTile->GetType() == WALL) {
-      return getMappedTile(grid, x, y);
-    }
-  }
-  return nextTile;
 }
 
 int faceValue(char facing) {
@@ -149,7 +68,7 @@ int main(int argc, char** argv) {
   f.open(fileName);
 
   Tile* curTile = NULL;
-  map<string, Tile*> grid;
+  Grid* grid = new Grid();
   int y = 1;
 
   // Parse the input into 
@@ -157,7 +76,7 @@ int main(int argc, char** argv) {
   std::getline(f, line);
   Tile* firstOfRow = NULL;
   while (strcmp(line.data(), "") != 0) {
-    firstOfRow = line2Tiles(&grid, y, line);
+    firstOfRow = grid->ParseLine(y, line);
     if (curTile == NULL) {
       curTile = firstOfRow;
     }
@@ -181,7 +100,7 @@ int main(int argc, char** argv) {
     for (int i = 0; i < dist; i++) {
       int x = curTile->GetX();
       int y = curTile->GetY();
-      Tile* nextTile = getNextSpace(&grid, facing, x, y);
+      Tile* nextTile = grid->GetNextSpace(facing, x, y);
       // If we hit a wall, then skip moving any further
       if (curTile == nextTile) {
         break;

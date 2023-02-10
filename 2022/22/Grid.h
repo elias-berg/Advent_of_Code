@@ -11,7 +11,7 @@ class Grid {
     Tile* ParseLine(int y, std::string line);
     Tile* GetNextSpace(char facing, int x, int y);
 
-  private:
+  protected:
     std::string ToKey(int x, int y);
     Tile* GetTile(int x, int y);
 

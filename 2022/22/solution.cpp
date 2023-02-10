@@ -30,6 +30,7 @@
 
 #include "Tile.h"
 #include "Grid.h"
+#include "Cube.h"
 
 using namespace std;
 
@@ -58,38 +59,7 @@ int faceValue(char facing) {
   }
 }
 
-int main(int argc, char** argv) {
-  string fileName = "input.txt";
-  if (argc == 2 && strcmp(argv[1], "-sample") == 0) {
-    fileName = "sample_input.txt";
-  }
-
-  ifstream f;
-  f.open(fileName);
-
-  Tile* curTile = NULL;
-  Grid* grid = new Grid();
-  int y = 1;
-
-  // Parse the input into 
-  string line;
-  std::getline(f, line);
-  Tile* firstOfRow = NULL;
-  while (strcmp(line.data(), "") != 0) {
-    firstOfRow = grid->ParseLine(y, line);
-    if (curTile == NULL) {
-      curTile = firstOfRow;
-    }
-    y++; // The max Y position is just whatever the last line is (origin is 1,1)
-    std::getline(f, line);
-  }
-
-  // Now get the sequence to follow
-  string sequence;
-  std::getline(f, sequence);
-  f.close();
-
-  // Off to the races!
+void part1(Grid* grid, Tile* curTile, string sequence) {
   char facing = '>'; // We always start facing right
   int dist;
   char turnDir;
@@ -117,6 +87,87 @@ int main(int argc, char** argv) {
   }
 
   std::cout << "Part 1: " << (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing) << "\n";
+}
 
+void part2(Cube* cube, Tile* curTile, string sequence) {
+  char facing = '>'; // We always start facing right
+  int dist;
+  char turnDir;
+  std::istrstream sequenceStream(sequence.data());
+  while (!sequenceStream.eof()) {
+    // Move the specified distance
+    sequenceStream >> dist;
+    for (int i = 0; i < dist; i++) {
+      int x = curTile->GetX();
+      int y = curTile->GetY();
+      Tile* nextTile = cube->GetNextSpace(&facing, x, y); // The facing direction may change!
+      // If we hit a wall, then skip moving any further
+      if (curTile == nextTile) {
+        break;
+      } else {
+        curTile = nextTile;
+      }
+    }
+
+    // Turn (keeping in mind that the last thing we read in should be a move)
+    if (!sequenceStream.eof()) {
+      sequenceStream >> turnDir;
+      facing = turn(facing, turnDir);
+    }
+  }
+
+  std::cout << "Part 2: " << (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing) << "\n";
+}
+
+int main(int argc, char** argv) {
+  string fileName = "input.txt";
+  int faceSize = 50; // Part 2 face size for the cube
+  if (argc == 2 && strcmp(argv[1], "-sample") == 0) {
+    fileName = "sample_input.txt";
+    faceSize = 4; // Sample has 4x4 faces
+  }
+
+  ifstream f;
+  f.open(fileName);
+
+  Grid* grid = new Grid(); // Part 1
+  Cube* cube = new Cube(faceSize); // Part 2
+
+  Tile* part1Start = NULL;
+  Tile* part2Start = NULL;
+  int y = 1;
+
+  // Parse the input into 
+  string line;
+  std::getline(f, line);
+  Tile* firstOfRow = NULL;
+  while (strcmp(line.data(), "") != 0) {
+    // Part 1 - Grid construction
+    firstOfRow = grid->ParseLine(y, line);
+    if (part1Start == NULL) {
+      part1Start = firstOfRow;
+    }
+    // Part 2 - Cube construction
+    firstOfRow = cube->ParseLine(y, line);
+    if (part2Start == NULL) {
+      part2Start = firstOfRow;
+    }
+
+    y++; // The max Y position is just whatever the last line is (origin is 1,1)
+    std::getline(f, line);
+  }
+
+  // Debug the cube
+  cube->ConstructCube();
+
+  // Now get the sequence to follow
+  string sequence;
+  std::getline(f, sequence);
+  f.close();
+
+  // Off to the races!
+  part1(grid, part1Start, sequence);
+
+  //part2()
   // Should probably clean up the memory here
 }

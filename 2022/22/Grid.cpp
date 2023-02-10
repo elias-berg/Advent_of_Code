@@ -6,8 +6,8 @@
 using namespace std;
 
 string Grid::ToKey(int x, int y) {
-  return std::to_string(x) + "," + std::to_string(y);
-}
+  return to_string(x) + "," + to_string(y);
+};
 
 Tile* Grid::GetTile(int x, int y) {
   Tile* t = NULL;

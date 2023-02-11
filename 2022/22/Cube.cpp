@@ -37,14 +37,11 @@ bool VertexPair::equals(VertexPair* rhs) {
     (A->equals(rhs->B) && B->equals(rhs->A));
 }
 
-// Note that I've reversed the negative signs for all of these rotations
-// because we want to rotate clockwise, which means using a theta of -90deg
-
 void Vertex::RotateX(int dir) {
   int y = Y;
   int z = Z;
-  Y = -z * dir;
-  Z = y * dir;
+  Y = z * dir;
+  Z = -y * dir;
 };
 
 void Vertex::RotateY(int dir) {
@@ -57,26 +54,20 @@ void Vertex::RotateY(int dir) {
 void Vertex::RotateZ(int dir) {
   int x = X;
   int y = Y;
-  X = -y * dir;
-  Y = x * dir;
+  X = y * dir;
+  Y = -x * dir;
 };
 
 void Vertex::Rotate(char axis, int dir, int x, int y, int z) {
   X = X - x;
   Y = Y - y;
   Z = Z - z;
-  switch (axis) {
-    case 'x':
-      RotateX(dir);
-      break;
-    case 'y':
-      RotateY(dir);
-      break;
-    case 'z':
-      RotateZ(dir);
-      break;
-    default:
-      break;
+  if (axis == 'x') {
+    RotateX(dir);
+  } else if (axis == 'y') {
+    RotateY(dir);
+  } else { // Assuming 'z' here
+    RotateZ(dir);
   }
   X = X + x;
   Y = Y + y;
@@ -94,6 +85,7 @@ void CubeFace::AddTile(string key, Tile* t) {
 CubeFace::CubeFace(int x, int y) {
   X = x;
   Y = y;
+  Flipped = false;
 
   Vertices = new Vertex*[4];
   Vertices[0] = new Vertex(x, y, 0); // Always in the top-left
@@ -197,20 +189,6 @@ void SetNeighbors(CubeFace* a, char bDir, CubeFace* b, char aDir) {
   b->AdjCnt++;
 }
 
-void RotateAllVertices(CubeFace* face, char axis, int dir, int x, int y, int z, map<CubeFace*, bool>* visited) {
-  for (int i = 0; i < 4; i++) {
-    face->Vertices[i]->Rotate(axis, dir, x, y, z);
-  }
-  visited->operator[](face) = true;
-  for (int n = 0; n < face->AdjCnt; n++) {
-    CubeFace* neigh = face->Neighbors[n];
-    if (!visited->at(neigh)) {
-      RotateAllVertices(neigh, axis, dir, x, y, z, visited);
-    }
-  }
-  visited->operator[](face) = false;
-}
-
 // Helper function to return a 2-sized array of vertices shared between two faces
 Vertex** GetSharedVertices(CubeFace* a, CubeFace* b) {
   int sharedCnt = 0;
@@ -235,68 +213,101 @@ Vertex** GetSharedVertices(CubeFace* a, CubeFace* b) {
   return NULL; // Weird sanity check -> should cause problems
 }
 
+void RotateAllVertices(CubeFace* prev, CubeFace* face, char axis, int dir, int x, int y, int z) {
+  // Rotate the current first...
+  for (int i = 0; i < 4; i++) {
+    face->Vertices[i]->Rotate(axis, dir, x, y, z);
+  }
+
+  // Then move on to rotate all of the subsequent, previously flipped faces
+  map<CubeFace*, bool> visited;
+  visited[prev] = true;
+  visited[face] = true;
+
+  queue<CubeFace*> Q;
+  Q.push(face);
+
+  while (Q.size() > 0) {
+    CubeFace* cur = Q.front();
+    Q.pop();
+
+    for (int n = 0; n < cur->AdjCnt; n++) {
+      CubeFace* neigh = cur->Neighbors[n];
+      if (neigh->Flipped && !visited[neigh]) {
+        Q.push(neigh);
+        visited[neigh] = true;
+        cout << "Also rotating " << neigh->X << "," << neigh->Y << "\n";
+        for (int i = 0; i < 4; i++) {
+          neigh->Vertices[i]->Rotate(axis, dir, x, y, z);
+        }
+      }
+    }
+  }
+}
+
 // Rotate the 'b' face 90 degrees relative to the 'a' face.
 // This means: find the axis that they have in common and rotate over it.
 // I.e. we find the two vertices that the faces have in common, then
 // find the axis that changes value between both of those vertices.
 // E.g. (1,1,1) and (1,0,1) only differs on the y-axis, so we need
 // to rotate all of the points around the y-axis
-void RotateFace3D(CubeFace* a, CubeFace* b, map<CubeFace*, bool>* visited) {
+void Cube::RotateFace3D(CubeFace* a, CubeFace* b) {
   Vertex** shared = GetSharedVertices(a, b);
   // Now we find out what axis has different values and we rotate over that axis.
   Vertex* v1 = shared[0];
   Vertex* v2 = shared[1];
-  int dir = 1; // Clockwise
-  char facing = a->Neighbor2Side.at(b);
-  if (facing == '>' || facing == 'v') {
-    dir = 1;
+  int dir = 1;
+  char bIsTo = a->Neighbor2Side.at(b);
+  string to = " counter-clockwise ";
+  if (bIsTo == '<' || bIsTo == 'v') {
+    dir = -1;
+    to = " clockwise ";
   }
+  cout << "Rotating " << ToKey(b->X, b->Y) << to << "which is " << bIsTo << " to " << ToKey(a->X, a->Y) << "\n";
+  
   if (v1->X != v2->X) {
-    RotateAllVertices(b, 'x', 1, 0, v1->Y, v1->Z, visited);
+    RotateAllVertices(a, b, 'x', dir, 0, v1->Y, v1->Z);
   } else if (v1->Y != v2->Y) {
-    RotateAllVertices(b, 'y', 1, v1->X, 0, v1->Z, visited);
+    RotateAllVertices(a, b, 'y', dir, v1->X, 0, v1->Z);
   } else { // Rotate over z-axis
-    RotateAllVertices(b, 'z', 1, v1->X, v1->Y, 0, visited);
+    RotateAllVertices(a, b, 'z', dir, v1->X, v1->Y, 0);
   }
 
   delete[] shared; // Clean up, eh?
 }
 
-// Face-flipping logic:
-// - Start with 1 -> flip it's neighbors, set flipped=true.
-// -- All the neighbors of those neighbors should also flip, but don't mark
-// - For each neighbor that was marked as flipped, flip it's neighbors and mark
-// -- Recursively flip the neighbor's neighbors
-// ...and so on
-void Cube::FlipFaces() {
-  // Populate the 'visited' collection
-  CubeFace* cur;
-  std::map<CubeFace*, bool> visited;
-  for (int i = 0; i < FaceCnt; i++) {
-    cur = Faces[i];
-    visited[cur] = false;
-  }
-  // Mark the first as 'visited' so we don't flip it and enqueue it
-  cur = Faces[0];
-  queue<CubeFace*> Q;
-  Q.push(cur);
-  visited[cur] = true;
-
-  // BFS!
-  while (!Q.empty()) {
-    cur = Q.front();
-    Q.pop(); // Thanks, C++, for not returning the popped value
-    CubeFace** neighbors = cur->Neighbors;
-    for (int n = 0; n < cur->AdjCnt; n++) {
-      CubeFace* neighbor = neighbors[n];
-      // Process the neighbor if we haven't flipped it yet!
-      if (!visited[neighbor]) {
-        cout << "Rotating " << ToKey(neighbor->X, neighbor->Y) << " relative to " << ToKey(cur->X, cur->Y) << "\n";
-        RotateFace3D(cur, neighbor, &visited);
-        visited[neighbor] = true;
-        Q.push(neighbor);
+void Cube::FlipFacesRecursive(CubeFace* prev, CubeFace* cur) {
+  cout << "Evaluating " << ToKey(cur->X, cur->Y) << "...\n";
+  // Base case: we're at a leaf
+  if (cur->AdjCnt == 1) {
+    RotateFace3D(prev, cur);
+  } else {
+    cout << "Recurse deeper!\n";
+    for (int i = 0; i < cur->AdjCnt; i++) {
+      CubeFace* next = cur->Neighbors[i];
+      // Only recurse on nodes we haven't previously flipped
+      if (!next->Flipped && next != prev) {
+        FlipFacesRecursive(cur, next);
       }
     }
+    RotateFace3D(prev, cur);
+  }
+  cur->Flipped = true;
+}
+
+// Face-flipping logic:
+// - Start with 1 -> recurse down to a leaf.
+// -- Flip the leaf relative to its non-leaf neighbor
+// -- Flip the non-leaf neighbor
+// -- Eventually we'll make out way back to 1 and its neighbors will have
+//    flipped relative to itself.
+void Cube::FlipFaces() {
+  // Populate the 'visited' collection
+  CubeFace* cur = Faces[0];
+  cur->Flipped = true;
+  for (int i = 0; i < cur->AdjCnt; i++) {
+    cout << "Recursing on " << cur->Neighbors[i]->X << "," << cur->Neighbors[i]->Y << "\n";
+    FlipFacesRecursive(cur, cur->Neighbors[i]);
   }
 }
 
@@ -344,7 +355,7 @@ void Cube::ConstructCube() {
   // neighbor 90deg clockwise.
   FlipFaces();
   
-  PrintAllVertices();
+  //PrintAllVertices();
 
   // Now that we have our cube, we need to go back through and find all the NEW edge
   // directions

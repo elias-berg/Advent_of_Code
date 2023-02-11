@@ -17,6 +17,12 @@
 // value = (1000 * Y-position) + (4 * X-position) + final direction?
 // Note that final direction is 0 for right, 1 for down, 2 for left,
 // and 3 for up.
+//
+// Part 2 -
+// Turns out that the input spaces actually make up the faces of a cube.
+// Moving off a cube face moves onto a different cube face rather than
+// wrapping around.
+// What is the value of the final position given the same position formula?
 
 // Use the following commands to run:
 // - `g++ *.cpp`

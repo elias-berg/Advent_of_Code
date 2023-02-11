@@ -45,6 +45,8 @@ class CubeFace : Grid {
     CubeFace** Neighbors; // Collection of all adjacent faces
     bool HasNeighbor(CubeFace* neighbor);
 
+    bool Flipped;
+
     // Each face has a reference to the other faces that touch
     // each edge. We have an edge->face dictionary for iterating
     // across each neighbor and determining which neighbor we
@@ -77,6 +79,8 @@ class Cube {
     int FaceCnt; // For making sure we hit 6
     CubeFace** Faces; // Collection of all faces
     void FlipFaces();
+    void FlipFacesRecursive(CubeFace* adj, CubeFace* cur);
+    void RotateFace3D(CubeFace* a, CubeFace* b);
 
     // Map-related data
     // The cube is effectively just a size-6 collection

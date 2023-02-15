@@ -18,8 +18,8 @@ Vertex::Vertex(int x, int y, int z) {
   Z = z;
 }
 
-void Vertex::PrintVertex() {
-  std::cout << "(" << X << "," << Y << "," << Z << ")\n";
+string Vertex::ToString() {
+  return "(" + to_string(X) + "," + to_string(Y) + "," + to_string(Z) + ")";
 }
 
 bool Vertex::equals(Vertex* rhs)  {
@@ -99,8 +99,8 @@ CubeFace::CubeFace(int x, int y) {
   // Now set the pairs!
   Side2Vertices['^'] = new VertexPair(Vertices[0], Vertices[1]);
   Side2Vertices['v'] = new VertexPair(Vertices[2], Vertices[3]);
-  Side2Vertices['>'] = new VertexPair(Vertices[0], Vertices[2]);
-  Side2Vertices['<'] = new VertexPair(Vertices[1], Vertices[3]);
+  Side2Vertices['<'] = new VertexPair(Vertices[0], Vertices[2]);
+  Side2Vertices['>'] = new VertexPair(Vertices[1], Vertices[3]);
 }
 
 Cube::Cube(int faceSize) {
@@ -161,6 +161,10 @@ Tile* Cube::ParseLine(int y, string line) {
   return first;
 }
 
+string CubeFace::ToString() {
+  return to_string(X) + "," + to_string(Y);
+}
+
 Tile* Cube::GetNextSpace(char* facing, int x, int y) {
   // TODO
   return NULL;
@@ -169,7 +173,7 @@ Tile* Cube::GetNextSpace(char* facing, int x, int y) {
 bool CubeFace::HasNeighbor(CubeFace* neighbor) {
   try {
     char dir = Neighbor2Side.at(neighbor);
-    return !!dir;
+    return dir == '>' || dir == '<' || dir == 'v' || dir == '^';
   } catch (out_of_range &oor) {
     return false;
   }
@@ -236,7 +240,6 @@ void RotateAllVertices(CubeFace* prev, CubeFace* face, char axis, int dir, int x
       if (neigh->Flipped && !visited[neigh]) {
         Q.push(neigh);
         visited[neigh] = true;
-        cout << "Also rotating " << neigh->X << "," << neigh->Y << "\n";
         for (int i = 0; i < 4; i++) {
           neigh->Vertices[i]->Rotate(axis, dir, x, y, z);
         }
@@ -258,12 +261,9 @@ void Cube::RotateFace3D(CubeFace* a, CubeFace* b) {
   Vertex* v2 = shared[1];
   int dir = 1;
   char bIsTo = a->Neighbor2Side.at(b);
-  string to = " counter-clockwise ";
   if (bIsTo == '<' || bIsTo == 'v') {
     dir = -1;
-    to = " clockwise ";
   }
-  cout << "Rotating " << ToKey(b->X, b->Y) << to << "which is " << bIsTo << " to " << ToKey(a->X, a->Y) << "\n";
   
   if (v1->X != v2->X) {
     RotateAllVertices(a, b, 'x', dir, 0, v1->Y, v1->Z);
@@ -277,12 +277,10 @@ void Cube::RotateFace3D(CubeFace* a, CubeFace* b) {
 }
 
 void Cube::FlipFacesRecursive(CubeFace* prev, CubeFace* cur) {
-  cout << "Evaluating " << ToKey(cur->X, cur->Y) << "...\n";
   // Base case: we're at a leaf
   if (cur->AdjCnt == 1) {
     RotateFace3D(prev, cur);
   } else {
-    cout << "Recurse deeper!\n";
     for (int i = 0; i < cur->AdjCnt; i++) {
       CubeFace* next = cur->Neighbors[i];
       // Only recurse on nodes we haven't previously flipped
@@ -306,7 +304,6 @@ void Cube::FlipFaces() {
   CubeFace* cur = Faces[0];
   cur->Flipped = true;
   for (int i = 0; i < cur->AdjCnt; i++) {
-    cout << "Recursing on " << cur->Neighbors[i]->X << "," << cur->Neighbors[i]->Y << "\n";
     FlipFacesRecursive(cur, cur->Neighbors[i]);
   }
 }
@@ -336,6 +333,40 @@ void CheckNeighbors2D(CubeFace* a, CubeFace* b) {
   delete[] shared;
 }
 
+char GetVertexDirection(Vertex* v1, Vertex* v2, CubeFace* face) {
+  VertexPair* pair = new VertexPair(v1, v2);
+  char dir[] = "<>^v";
+  for (int i = 0; i < 4; i++) {
+    VertexPair* vp = face->Side2Vertices[dir[i]];
+    if (vp->equals(pair)) {
+      delete pair;
+      return dir[i];
+    }
+  }
+  delete pair;
+  return -1;
+}
+
+void CheckNeighbors3D(CubeFace* a, CubeFace* b) {
+  Vertex** shared = GetSharedVertices(a, b);
+  // No matches!
+  if (shared == NULL) {
+    return;
+  }
+  // Now, we need to get the direction the shared vertices are
+  // for the original faces
+  Vertex* v1 = shared[0];
+  Vertex* v2 = shared[1];
+
+  char bDir = GetVertexDirection(v1, v2, a);
+  char aDir = GetVertexDirection(v1, v2, b);
+  if (aDir != -1 && bDir != -1) {
+    SetNeighbors(a, bDir, b, aDir);
+  }
+
+  delete[] shared;
+}
+
 void Cube::ConstructCube() {
   // First, go through all possible faces and map them out to each other
   for (int f = 0; f < FaceCnt; f++) {
@@ -354,26 +385,62 @@ void Cube::ConstructCube() {
   // Now that we have the flattened neighbors, we need to do a BFS and flip each
   // neighbor 90deg clockwise.
   FlipFaces();
-  
-  //PrintAllVertices();
 
   // Now that we have our cube, we need to go back through and find all the NEW edge
   // directions
+  for (int f = 0; f < FaceCnt; f++) {
+    CubeFace* curFace = Faces[f];
+    // Now iterate through all other faces and find neighbors
+    for (int o = 0; o < FaceCnt; o++) {
+      if (o != f) {
+        CubeFace* otherFace = Faces[o];
+        if (!otherFace->HasNeighbor(curFace)) {
+          CheckNeighbors3D(curFace, otherFace);
+        }
+      }
+    }
+  }
+
+  PrintAllNeighbors();
 }
 
-void Cube::PrintAllVertices() {
-  std::map<std::string, bool> unique;
+void Cube::PrintAllVertices(bool unique) {
+  std::map<std::string, bool> uniqueVs;
 
   for (int f = 0; f < FaceCnt; f++) {
     CubeFace* face = Faces[f];
     Vertex** vertices = face->Vertices;
+    if (!unique) {
+      cout << "Face " << face->X << "," << face->Y << ":\n";
+    }
     for (int i = 0; i < 4; i++) {
       Vertex* v = vertices[i];
       string key = std::to_string(v->X) + std::to_string(v->Y) + std::to_string(v->Z);
-      if (!unique[key]) {
-        v->PrintVertex();
-        unique[key] = true;
+      if (unique && !uniqueVs[key]) {
+        cout << v->ToString() << "\n";
+        uniqueVs[key] = true;
+      } else if (!unique) {
+        cout << v->ToString() << "\n";
       }
+    }
+  }
+}
+
+void Cube::PrintAllNeighbors() {
+  char dir[] = "<>^v";
+
+  for (int f = 0; f < FaceCnt; f++) {
+    CubeFace* face = Faces[f];
+    cout << "Cube Face " << face->ToString() << ":\n";
+    for (int i = 0; i < 4; i++) {
+      VertexPair* vp = face->Side2Vertices[dir[i]];
+      Vertex* a = vp->A;
+      Vertex* b = vp->B;
+
+      string keyA = a->ToString();
+      string keyB = b->ToString();
+      CubeFace* n = face->Side2Neighbor[dir[i]];
+      cout << "Side " << keyA << " and " << keyB << " " << dir[i] << " " << n->X << "," << n->Y << "\n";
     }
   }
 }

@@ -13,7 +13,7 @@ class Vertex {
     int Y;
     int Z;
     Vertex(int x, int y, int z);
-    void PrintVertex();
+    std::string ToString();
     void Rotate(char axis, int dir, int x, int y, int z);
     bool equals(Vertex* rhs);
 
@@ -57,6 +57,8 @@ class CubeFace : Grid {
     std::map<CubeFace*, char> Neighbor2Side;
 
     std::map<char, VertexPair*> Side2Vertices;
+
+    std::string ToString();
 };
 
 class Cube {
@@ -89,7 +91,8 @@ class Cube {
     // Coordinate string -> CubeFace
     std::map<std::string, CubeFace*> FaceByCoord;
     
-    void PrintAllVertices();
+    void PrintAllVertices(bool unique);
+    void PrintAllNeighbors();
 };
 
 #endif

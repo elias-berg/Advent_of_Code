@@ -35,6 +35,7 @@
 #include <map>
 
 #include "Tile.h"
+#include "Container.h"
 #include "Grid.h"
 #include "Cube.h"
 
@@ -65,7 +66,7 @@ int faceValue(char facing) {
   }
 }
 
-void part1(Grid* grid, Tile* curTile, string sequence) {
+int Solve(Container* cont, Tile* curTile, string sequence) {
   char facing = '>'; // We always start facing right
   int dist;
   char turnDir;
@@ -76,7 +77,7 @@ void part1(Grid* grid, Tile* curTile, string sequence) {
     for (int i = 0; i < dist; i++) {
       int x = curTile->GetX();
       int y = curTile->GetY();
-      Tile* nextTile = grid->GetNextSpace(facing, x, y);
+      Tile* nextTile = cont->GetNextSpace(&facing, x, y);
       // If we hit a wall, then skip moving any further
       if (curTile == nextTile) {
         break;
@@ -92,37 +93,7 @@ void part1(Grid* grid, Tile* curTile, string sequence) {
     }
   }
 
-  std::cout << "Part 1: " << (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing) << "\n";
-}
-
-void part2(Cube* cube, Tile* curTile, string sequence) {
-  char facing = '>'; // We always start facing right
-  int dist;
-  char turnDir;
-  std::istrstream sequenceStream(sequence.data());
-  while (!sequenceStream.eof()) {
-    // Move the specified distance
-    sequenceStream >> dist;
-    for (int i = 0; i < dist; i++) {
-      int x = curTile->GetX();
-      int y = curTile->GetY();
-      Tile* nextTile = cube->GetNextSpace(&facing, x, y); // The facing direction may change!
-      // If we hit a wall, then skip moving any further
-      if (curTile == nextTile) {
-        break;
-      } else {
-        curTile = nextTile;
-      }
-    }
-
-    // Turn (keeping in mind that the last thing we read in should be a move)
-    if (!sequenceStream.eof()) {
-      sequenceStream >> turnDir;
-      facing = turn(facing, turnDir);
-    }
-  }
-
-  std::cout << "Part 2: " << (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing) << "\n";
+  return (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing);
 }
 
 int main(int argc, char** argv) {
@@ -172,8 +143,9 @@ int main(int argc, char** argv) {
   f.close();
 
   // Off to the races!
-  part1(grid, part1Start, sequence);
+  std::cout << "Part 1: " << Solve((Container*)grid, part1Start, sequence)  << "\n";
 
-  //part2()
+  std::cout << "Part 2: " << Solve((Container*)cube, part2Start, sequence) << "\n";
+
   // Should probably clean up the memory here
 }

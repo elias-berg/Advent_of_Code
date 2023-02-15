@@ -5,10 +5,6 @@
 
 using namespace std;
 
-string Grid::ToKey(int x, int y) {
-  return to_string(x) + "," + to_string(y);
-};
-
 Tile* Grid::GetTile(int x, int y) {
   Tile* t = NULL;
   try {
@@ -43,11 +39,11 @@ Tile* Grid::ParseLine(int y, string line) {
   return first;
 }
 
-Tile* Grid::GetNextSpace(char facing, int x, int y) {
+Tile* Grid::GetNextSpace(char* facing, int x, int y) {
   int xMod = 0;
   int yMod = 0;
   Tile* nextTile = NULL;
-  switch (facing) {
+  switch (*facing) {
     case '>':
       xMod = -1;
       nextTile = GetTile(x+1, y);

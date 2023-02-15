@@ -11,10 +11,6 @@
 
 using namespace std;
 
-string Cube::ToKey(int x, int y) {
-  return to_string(x) + "," + to_string(y);
-}
-
 void CubeFace::AddTile(string key, Tile* t) {
   grid[key] = t;
 }
@@ -104,6 +100,7 @@ string CubeFace::ToString() {
 
 Tile* Cube::GetNextSpace(char* facing, int x, int y) {
   // TODO
+  cout << "TO DO\n";
   return NULL;
 }
 

@@ -7,6 +7,7 @@
 #include "Tile.h"
 #include "Grid.h"
 #include "Vertex.h"
+#include "Container.h"
 
 class CubeFace : Grid {
   public:
@@ -36,7 +37,7 @@ class CubeFace : Grid {
     std::string ToString();
 };
 
-class Cube {
+class Cube : Container {
   public:
     Cube(int faceSize);
     Tile* ParseLine(int y, std::string line);
@@ -50,7 +51,6 @@ class Cube {
 
   private:
     int FaceSize; // Determines what Face a Tile belongs to
-    std::string ToKey(int x, int y);
     Tile* GetTile(int x, int y);
 
     int FaceCnt; // For making sure we hit 6

@@ -6,30 +6,7 @@
 
 #include "Tile.h"
 #include "Grid.h"
-
-class Vertex {
-  public:
-    int X;
-    int Y;
-    int Z;
-    Vertex(int x, int y, int z);
-    std::string ToString();
-    void Rotate(char axis, int dir, int x, int y, int z);
-    bool equals(Vertex* rhs);
-
-  private:
-    void RotateX(int dir);
-    void RotateY(int dir);
-    void RotateZ(int dir);
-};
-
-class VertexPair {
-  public:
-    Vertex* A;
-    Vertex* B;
-    VertexPair(Vertex* a, Vertex* b);
-    bool equals(VertexPair* rhs);
-};
+#include "Vertex.h"
 
 class CubeFace : Grid {
   public:
@@ -55,9 +32,7 @@ class CubeFace : Grid {
     // the direction we should be facing.
     std::map<char, CubeFace*> Side2Neighbor;
     std::map<CubeFace*, char> Neighbor2Side;
-
     std::map<char, VertexPair*> Side2Vertices;
-
     std::string ToString();
 };
 
@@ -91,6 +66,7 @@ class Cube {
     // Coordinate string -> CubeFace
     std::map<std::string, CubeFace*> FaceByCoord;
     
+    // For debugging
     void PrintAllVertices(bool unique);
     void PrintAllNeighbors();
 };

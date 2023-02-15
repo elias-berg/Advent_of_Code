@@ -17,3 +17,5 @@ dist/
 
 # Don't let me accidentally save my session ID...
 .envrc
+
+.vscode/

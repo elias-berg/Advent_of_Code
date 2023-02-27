@@ -11,10 +11,36 @@
 
 using namespace std;
 
+#define DEBUG false
+
+/////////////////
+// CubeFace Class
+/////////////////
+
+string CubeFace::ToString() {
+  return to_string(X) + "," + to_string(Y);
+}
+// Generically adds a tile to the grid "map"
 void CubeFace::AddTile(string key, Tile* t) {
   grid[key] = t;
 }
 
+// Simple helper function to see if a CubeFace has any other
+// particular CubeFace as a neighbor. For constructing the cube.
+bool CubeFace::HasNeighbor(CubeFace* neighbor) {
+  try {
+    char dir = Neighbor2Side.at(neighbor);
+    return dir == '>' || dir == '<' || dir == 'v' || dir == '^';
+  } catch (out_of_range &oor) {
+    return false;
+  }
+}
+
+// When constructing a cube face, we want to set its vertices and all of the
+// directions the vertices are facing so when we rotate each face of the cube
+// to actually make the cube, we can determine the direction each neighbor is
+// facing due to the rotation of the vertices.
+// Note that the vertices will undergo a transformation!
 CubeFace::CubeFace(int x, int y) {
   X = x;
   Y = y;
@@ -36,6 +62,10 @@ CubeFace::CubeFace(int x, int y) {
   Side2Vertices['>'] = new VertexPair(Vertices[1], Vertices[3]);
 }
 
+/////////////
+// Cube Class
+/////////////
+
 Cube::Cube(int faceSize) {
   FaceSize = faceSize;
   FaceCnt = 0;
@@ -51,6 +81,16 @@ CubeFace* Cube::GetFace(int quadX, int quadY) {
     cf = NULL;
   }
   return cf;
+}
+
+Tile* Cube::GetTile(int x, int y) {
+  int quadX = (x-1) / FaceSize;
+  int quadY = (y-1) / FaceSize;
+  CubeFace* face = GetFace(quadX, quadY);
+  if (face != NULL) {
+    return face->GetTile(x, y);
+  }
+  return NULL;
 }
 
 // Much like the Grid::ParseLine, the difference is that we determine what
@@ -78,10 +118,8 @@ Tile* Cube::ParseLine(int y, string line) {
       }
 
       // Now add the tile to the face
-      int relativeX = x % FaceSize;
-      int relativeY = y % FaceSize;
-      next = new Tile(relativeX, relativeY, cur);
-      string key = ToKey(relativeX, relativeY);
+      next = new Tile(x, y, cur);
+      string key = ToKey(x, y);
       face->AddTile(key, next);
 
       // Set the first tile
@@ -94,23 +132,151 @@ Tile* Cube::ParseLine(int y, string line) {
   return first;
 }
 
-string CubeFace::ToString() {
-  return to_string(X) + "," + to_string(Y);
+// Given a face direction, return the opposite direction.
+// Used when moving faces of the cube, need to actually face the opposite
+// direction of the direction the previous face is relative to the new face.
+char Opposite(char facing) {
+  if (facing == '^') {
+    return 'v';
+  } else if (facing == 'v') {
+    return '^';
+  } else if (facing == '>') {
+    return '<';
+  } else { // facing == '<'
+    return '>';
+  }
+}
+
+// This function takes the direction we moved from the previous face (prevDir), the direction the previous
+// face is facing relative to the new face we're moving onto (nextDir), that next face, and the last tile's
+// x and y coordinates on the flat cube to determine the corresponding coordinates on the "nextFace" that
+// we'll end up at.
+//
+// Fun fact, I drew all of the possible face combinations to come up with the if-block structure. It was
+// not a lot of fun...
+Tile* Cube::FlipCoordinates(char prevDir, char nextDir, CubeFace* nextFace, int oldX, int oldY, int faceSize) {
+  int x = oldX % faceSize;
+  int y = oldY % faceSize;
+  if (x == 0) { x = faceSize; }
+  if (y == 0) { y = faceSize; }
+  // Here comes the fun flipping logic. Depending on which direction we cross over
+  // and what side of the new face we land on will determine the new coordinates.
+  int newX, newY;
+  if (prevDir == '>') { // Went off in the +X direction
+    if (nextDir == '<') { // Natural neighbor
+      newX = 1;
+      newY = y;
+    } else if (nextDir == '^') { // 90deg counter-clockwise
+      newX = (faceSize - y) + 1;
+      newY = 1;
+    } else if (nextDir == 'v') { // 90deg clockwise
+      newX = y;
+      newY = faceSize;
+    } else { // nextDir == '>'
+      newX = faceSize;
+      newY = (faceSize - y) + 1;
+    }
+  } else if (prevDir == 'v') { // Went off in the +Y direction
+    if (nextDir == '^') { // Natural neighbor
+      newX = x;
+      newY = 1;
+    } else if (nextDir == '>') { // CC
+      newX = faceSize;
+      newY = x;
+    } else if (nextDir == '<') { // C
+      newX = 1;
+      newY = (faceSize - x) + 1;
+    } else { // nextDir == 'v'
+      newX = (faceSize - x) + 1;
+      newY = faceSize;
+    }
+  } else if (prevDir == '^') { // Went off in the -Y direction
+    if (nextDir == 'v') { // Natural neighbor
+      newX = x;
+      newY = faceSize;
+    } else if (nextDir == '<') { // CC
+      newX = 1;
+      newY = x;
+    } else if (nextDir == '>') { // C
+      newX = faceSize;
+      newY = (faceSize - x) + 1;
+    } else { // nextDir == '^'
+      newX = (faceSize - x) + 1;
+      newY = 1;
+    }
+  } else { // prevDir == '<'; // Went off in the -X direction
+    if (nextDir == '>') { // Natural neighbor
+      newX = faceSize;
+      newY = y;
+    } else if (nextDir == 'v') { // CC
+      newX = (faceSize - y) + 1;
+      newY = faceSize;
+    } else if (nextDir == '^') { // C
+      newX = y;
+      newY = 1;
+    } else { // nextDir == '<'
+      newX = 1;
+      newY = (faceSize - y) + 1;
+    }
+  }
+
+  // Now get the face-relative position and get the tile!
+  x = (nextFace->X * faceSize) + newX;
+  y = (nextFace->Y * faceSize) + newY;
+  return GetTile(x, y);
 }
 
 Tile* Cube::GetNextSpace(char* facing, int x, int y) {
-  // TODO
-  cout << "TO DO\n";
-  return NULL;
-}
-
-bool CubeFace::HasNeighbor(CubeFace* neighbor) {
-  try {
-    char dir = Neighbor2Side.at(neighbor);
-    return dir == '>' || dir == '<' || dir == 'v' || dir == '^';
-  } catch (out_of_range &oor) {
-    return false;
+  int xMod = 0;
+  int yMod = 0;
+  if (*facing == '>') {
+    xMod = 1;
+  } else if (*facing == '<') {
+    xMod = -1;
+  } else if (*facing == 'v') {
+    yMod = 1;
+  } else { // *facing == '^'
+    yMod = -1;
   }
+
+  Tile* nextTile = GetTile(x + xMod, y + yMod);
+
+  // Return self if the next tile is actually a wall
+  if (nextTile != NULL && nextTile->GetType() == WALL) {
+    return GetTile(x, y);
+  }
+
+  // Else, we need to move onto another cube face
+  if (nextTile == NULL) {
+    int quadX = (x-1) / FaceSize;
+    int quadY = (y-1) / FaceSize;
+    string quadKey = ToKey(quadX, quadY);
+    CubeFace* face = FaceByCoord[quadKey];
+
+    CubeFace* nextFace;
+    if (xMod == 1) { // To the right
+      nextFace = face->Side2Neighbor['>'];
+    } else if (xMod == -1) {
+      nextFace = face->Side2Neighbor['<'];
+    } else if (yMod == 1) {
+      nextFace = face->Side2Neighbor['v'];
+    } else { // yMod == -1
+      nextFace = face->Side2Neighbor['^'];
+    }
+    // If we go up, but it's the right side of the next face, then
+    // we need to face left.
+    char nextDir = nextFace->Neighbor2Side[face];
+    nextTile = FlipCoordinates(*facing, nextDir, nextFace, x, y, FaceSize);
+
+    if (nextTile->GetType() == WALL) {
+      return GetTile(x, y);
+    }
+
+    // Don't forget to update the direction we're facing
+    *facing = Opposite(nextDir);
+  }
+
+  return nextTile;
 }
 
 // Helper function to set two cube faces as neighbors to each other
@@ -335,9 +501,12 @@ void Cube::ConstructCube() {
     }
   }
 
+  #if DEBUG
   PrintAllNeighbors();
+  #endif
 }
 
+// Debugging helper function
 void Cube::PrintAllVertices(bool unique) {
   std::map<std::string, bool> uniqueVs;
 
@@ -360,6 +529,7 @@ void Cube::PrintAllVertices(bool unique) {
   }
 }
 
+// Debugging helper function
 void Cube::PrintAllNeighbors() {
   char dir[] = "<>^v";
 

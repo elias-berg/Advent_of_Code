@@ -9,7 +9,7 @@
 #include "Vertex.h"
 #include "Container.h"
 
-class CubeFace : Grid {
+class CubeFace : public Grid {
   public:
     int X;
     int Y;
@@ -48,10 +48,11 @@ class Cube : Container {
     // - Flip all vertices
     // - Link the faces together via cube edges
     void ConstructCube();
+    Tile* GetTile(int x, int y);
+    Tile* FlipCoordinates(char prevDir, char nextDir, CubeFace* nextFace, int oldX, int oldY, int faceSize);
 
   private:
     int FaceSize; // Determines what Face a Tile belongs to
-    Tile* GetTile(int x, int y);
 
     int FaceCnt; // For making sure we hit 6
     CubeFace** Faces; // Collection of all faces

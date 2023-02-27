@@ -71,6 +71,7 @@ int Solve(Container* cont, Tile* curTile, string sequence) {
   int dist;
   char turnDir;
   std::istrstream sequenceStream(sequence.data());
+
   while (!sequenceStream.eof()) {
     // Move the specified distance
     sequenceStream >> dist;
@@ -78,6 +79,7 @@ int Solve(Container* cont, Tile* curTile, string sequence) {
       int x = curTile->GetX();
       int y = curTile->GetY();
       Tile* nextTile = cont->GetNextSpace(&facing, x, y);
+
       // If we hit a wall, then skip moving any further
       if (curTile == nextTile) {
         break;
@@ -92,7 +94,7 @@ int Solve(Container* cont, Tile* curTile, string sequence) {
       facing = turn(facing, turnDir);
     }
   }
-
+  
   return (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing);
 }
 

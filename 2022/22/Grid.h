@@ -11,10 +11,9 @@ class Grid : Container {
   public:
     Tile* ParseLine(int y, std::string line);
     Tile* GetNextSpace(char* facing, int x, int y);
-
-  protected:
     Tile* GetTile(int x, int y);
 
+  protected:
     std::map<std::string, Tile*> grid;
 };
 

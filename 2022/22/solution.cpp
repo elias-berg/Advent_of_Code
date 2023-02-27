@@ -17,6 +17,12 @@
 // value = (1000 * Y-position) + (4 * X-position) + final direction?
 // Note that final direction is 0 for right, 1 for down, 2 for left,
 // and 3 for up.
+//
+// Part 2 -
+// Turns out that the input spaces actually make up the faces of a cube.
+// Moving off a cube face moves onto a different cube face rather than
+// wrapping around.
+// What is the value of the final position given the same position formula?
 
 // Use the following commands to run:
 // - `g++ *.cpp`
@@ -29,47 +35,12 @@
 #include <map>
 
 #include "Tile.h"
+#include "Container.h"
+#include "Grid.h"
+#include "Cube.h"
 
 using namespace std;
 
-string toKey(int x, int y) {
-  return std::to_string(x) + "," + std::to_string(y);
-}
-
-Tile* getMappedTile(map<string, Tile*>* grid, int x, int y) {
-  Tile* t = NULL;
-  try {
-    t = grid->at(toKey(x, y));
-  } catch (out_of_range &oor) {
-    t = NULL;
-  }
-  return t;
-}
-
-Tile* line2Tiles(map<string, Tile*>* grid, int y, string line) {
-  Tile *first = NULL, *next;
-  for (int i = 0; i < line.length(); i++) {
-    char cur = line[i];
-    int x = i + 1; // Since the origin is 1,1
-
-    if (cur != ' ') {
-      next = new Tile(x, y, cur);
-      (*grid)[toKey(x, y)] = next;
-
-      // Set the first tile
-      if (first == NULL) {
-        first = next;
-      }
-    }
-  }
-
-  return first;
-}
-
-/**
- * There's surely a much better way to write this, but I don't really have the
- * mental capacity to even bother since I'm relearning C++ as-is.
- */
 char turn(char facing, char dir) {
   if (facing == '>') {
     return dir == 'R' ? 'v' : '^';
@@ -80,50 +51,6 @@ char turn(char facing, char dir) {
   } else { // Assuming it MUST be '^'
     return dir == 'R' ? '>' : '<';
   }
-}
-
-Tile* getNextSpace(map<string, Tile*>* grid, char facing, int x, int y) {
-  int xMod = 0;
-  int yMod = 0;
-  Tile* nextTile = NULL;
-  switch (facing) {
-    case '>':
-      xMod = -1;
-      nextTile = getMappedTile(grid, x+1, y);
-      break;
-    case 'v':
-      yMod = -1;
-      nextTile = getMappedTile(grid, x, y+1);
-      break;
-    case '<':
-      xMod = 1;
-      nextTile = getMappedTile(grid, x-1, y);
-      break;
-    default: // '^'
-      yMod = 1;
-      nextTile = getMappedTile(grid, x, y-1);
-      break;
-  }
-  // Return self if the next tile is actually a wall
-  if (nextTile != NULL && nextTile->GetType() == WALL) {
-    return getMappedTile(grid, x, y);
-  }
-  // Else, we hit an edge and need to wrap around
-  if (nextTile == NULL) {
-    int newX = x + xMod;
-    int newY = y + yMod;
-    Tile* wrappedTile = getMappedTile(grid, newX, newY);
-    while (wrappedTile != NULL) {
-      nextTile = wrappedTile;
-      newX += xMod;
-      newY += yMod;
-      wrappedTile = getMappedTile(grid, newX, newY);
-    }
-    if (nextTile->GetType() == WALL) {
-      return getMappedTile(grid, x, y);
-    }
-  }
-  return nextTile;
 }
 
 int faceValue(char facing) {
@@ -139,49 +66,20 @@ int faceValue(char facing) {
   }
 }
 
-int main(int argc, char** argv) {
-  string fileName = "input.txt";
-  if (argc == 2 && strcmp(argv[1], "-sample") == 0) {
-    fileName = "sample_input.txt";
-  }
-
-  ifstream f;
-  f.open(fileName);
-
-  Tile* curTile = NULL;
-  map<string, Tile*> grid;
-  int y = 1;
-
-  // Parse the input into 
-  string line;
-  std::getline(f, line);
-  Tile* firstOfRow = NULL;
-  while (strcmp(line.data(), "") != 0) {
-    firstOfRow = line2Tiles(&grid, y, line);
-    if (curTile == NULL) {
-      curTile = firstOfRow;
-    }
-    y++; // The max Y position is just whatever the last line is (origin is 1,1)
-    std::getline(f, line);
-  }
-
-  // Now get the sequence to follow
-  string sequence;
-  std::getline(f, sequence);
-  f.close();
-
-  // Off to the races!
+int Solve(Container* cont, Tile* curTile, string sequence) {
   char facing = '>'; // We always start facing right
   int dist;
   char turnDir;
   std::istrstream sequenceStream(sequence.data());
+
   while (!sequenceStream.eof()) {
     // Move the specified distance
     sequenceStream >> dist;
     for (int i = 0; i < dist; i++) {
       int x = curTile->GetX();
       int y = curTile->GetY();
-      Tile* nextTile = getNextSpace(&grid, facing, x, y);
+      Tile* nextTile = cont->GetNextSpace(&facing, x, y);
+
       // If we hit a wall, then skip moving any further
       if (curTile == nextTile) {
         break;
@@ -196,8 +94,60 @@ int main(int argc, char** argv) {
       facing = turn(facing, turnDir);
     }
   }
+  
+  return (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing);
+}
 
-  std::cout << "Part 1: " << (1000 * curTile->GetY()) + (4 * curTile->GetX()) + faceValue(facing) << "\n";
+int main(int argc, char** argv) {
+  string fileName = "input.txt";
+  int faceSize = 50; // Part 2 face size for the cube
+  if (argc == 2 && strcmp(argv[1], "-sample") == 0) {
+    fileName = "sample_input.txt";
+    faceSize = 4; // Sample has 4x4 faces
+  }
+
+  ifstream f;
+  f.open(fileName);
+
+  Grid* grid = new Grid(); // Part 1
+  Cube* cube = new Cube(faceSize); // Part 2
+
+  Tile* part1Start = NULL;
+  Tile* part2Start = NULL;
+  int y = 1;
+
+  // Parse the input into 
+  string line;
+  std::getline(f, line);
+  Tile* firstOfRow = NULL;
+  while (strcmp(line.data(), "") != 0) {
+    // Part 1 - Grid construction
+    firstOfRow = grid->ParseLine(y, line);
+    if (part1Start == NULL) {
+      part1Start = firstOfRow;
+    }
+    // Part 2 - Cube construction
+    firstOfRow = cube->ParseLine(y, line);
+    if (part2Start == NULL) {
+      part2Start = firstOfRow;
+    }
+
+    y++; // The max Y position is just whatever the last line is (origin is 1,1)
+    std::getline(f, line);
+  }
+
+  // Debug the cube
+  cube->ConstructCube();
+
+  // Now get the sequence to follow
+  string sequence;
+  std::getline(f, sequence);
+  f.close();
+
+  // Off to the races!
+  std::cout << "Part 1: " << Solve((Container*)grid, part1Start, sequence)  << "\n";
+
+  std::cout << "Part 2: " << Solve((Container*)cube, part2Start, sequence) << "\n";
 
   // Should probably clean up the memory here
 }

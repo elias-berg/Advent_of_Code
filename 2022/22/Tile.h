@@ -1,7 +1,5 @@
-#include <string>
-#include <map>
-
-using namespace std;
+#ifndef TILE_H
+#define TILE_H
 
 enum TileType {
   SPACE,
@@ -17,13 +15,10 @@ class Tile {
     int GetY();
     TileType GetType();
 
-    void Add(char dir, Tile* t);
-    Tile* GetNext(char dir);
-    Tile* GetNextSpace(char dir);
-
   private:
     int X;
     int Y;
-    TileType Type; 
-    map<char, Tile*> Adj;
+    TileType Type;
 };
+
+#endif

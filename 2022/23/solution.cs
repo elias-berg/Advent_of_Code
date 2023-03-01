@@ -1,10 +1,26 @@
 // Advent of Code 2022 - Day 23
 // Unstable Diffusion
 //
-// <Problem Statement>
+// You meet back up with the elves where the starfruit grove is supposed to
+// be! But...there's no starfruit, so the elves elect to plant seeds in the
+// grove. They're frantic and decide to bustle around like so:
+// - Each turn, each elf considers the same direction first to move.
+// - The order of directions goes N, S, W, E.
+// - If no elves are in any of a direction's spaces adjacent, then the
+//   elf proposes to move directly in that direction.
+// - If a direction doesn't work, they consider the next direction.
+// - If all directions work, then the elf doesn't move, as well as if
+//   no directions work, the elf won't move.
+// - If two elves propose the same spot, then no elves move.
+// - At the end of the turn, the turn's considered direction moves to
+//   the end of the list and the next direction is considered first next turn.
 //
 // Part 1 -
+// After 10 turns, how many empty spaces are there in the grove, given the
+// grove is a rectangle perfectly encapsulating all of the elves?
 //
+// Part 2 -
+// What is the first turn number where no elves move?
 
 // To run:
 // I used .NET 7.0 x64 for macOS and Mono (https://www.mono-project.com/)
@@ -17,11 +33,11 @@ using System.Collections.Generic;
 public class Elf {
   public static char[] Directions = {'N', 'S', 'W', 'E'};
   public static int DirectionIdx = 0;
-  public static Dictionary<string, bool> Moves;
+  public static Dictionary<string, Elf> Moves;
   public static Dictionary<string, Elf> Elves;
 
   static Elf() {
-    Moves = new Dictionary<string, bool>();
+    Moves = new Dictionary<string, Elf>();
     Elves = new Dictionary<string, Elf>();
   }
 
@@ -96,27 +112,39 @@ public class Elf {
 
     NextKey = NextX + "," + NextY;
     if (!Elf.Moves.ContainsKey(NextKey)) {
-      Elf.Moves.Add(NextKey, true);
+      Elf.Moves.Add(NextKey, this);
     } else { // If some other elf wants to move to the same spot, then cancel both
-      Elf.Moves[NextKey] = false;
+      Elf.Moves[NextKey] = null;
       NextKey = "";
     }
   }
 
-  public void Move() {
-    if (NextKey != "" && Elf.Moves[NextKey] == true) {
-      Elf.Elves.Remove(X + "," + Y);
-      Elf.Elves.Add(NextKey, this);
-      X = NextX; // Null-coalesce for the compiler
-      Y = NextY;
+  /**
+   * Wrapper around the Moves dictionary to move all of the elves
+   */
+  public static bool MoveElves() {
+    bool moved = false;
+    foreach (string key in Elf.Moves.Keys) {
+      Elf e = Elf.Moves[key];
+      if (e != null) {
+        moved = true;
+        e.Move();
+      }
     }
-    NextKey = ""; // Clear for the next iteration
-  }
 
-  public static void EndRound() {
     Elf.DirectionIdx++;
     Elf.DirectionIdx = Elf.DirectionIdx % Elf.Directions.Length;
     Elf.Moves.Clear();
+
+    return moved;
+  }
+
+  private void Move() {
+    Elf.Elves.Remove(X + "," + Y);
+    Elf.Elves.Add(NextKey, this);
+    X = NextX;
+    Y = NextY;
+    NextKey = ""; // Clear for the next iteration
   }
 }
 
@@ -145,15 +173,17 @@ public class solution {
       y++; // Y increases with each line
     }
 
-    // Step 2: moves elves around the grid for part 1
+    // Step 2: move elves around the grid for part 1
+    int moveNum = 0;
+    bool oneMoved = true;
     for (int i = 0; i < 10; i++) {
       foreach (Elf e in elves) {
         e.DetermineMove();
       }
-      foreach (Elf e in elves) {
-        e.Move();
+      oneMoved = Elf.MoveElves();
+      if (oneMoved) {
+        moveNum++;
       }
-      Elf.EndRound();
     }
 
     // Step 3: detemine the max size of the grid!
@@ -167,5 +197,18 @@ public class solution {
     int w = (xMax - xMin) + 1; // Don't forget to account for 0!
     int h = (yMax - yMin) + 1;
     System.Console.WriteLine("Part 1: " + ((w * h) - elves.Count));
+
+    // Step 4: continue moving elves around the grid for part 2
+    while (oneMoved) {
+      oneMoved = false; // Set to false for each iteration
+      foreach (Elf e in elves) {
+        e.DetermineMove();
+      }
+      if (Elf.MoveElves()) {
+        oneMoved = true;
+      }
+      moveNum++; // Because we need the first turn that NO elves moved
+    }
+    System.Console.WriteLine("Part 2: " + moveNum);
   }
 }

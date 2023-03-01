@@ -14,7 +14,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 
 ### 2022
 
-| Day  | Name                                 | Lang.      | Day  | Name                                  | Lang.      |
+| Day  | Name                                 | Language   | Day  | Name                                  | Language   |
 | ---- | ------------------------------------ | ---------- | ---- | ------------------------------------- | ---------- |
 | *1*  | [Calorie Counting](./2022/1)         | Clojure    | *14* | [Regolith Reservoir](./2022/14)       | Node.js    |
 | *2*  | [Rock Paper Scissors](./2022/2)      | Python     | *15* | [Beacon Exclusion Zone](./2022/15)    | Clojure    |
@@ -25,7 +25,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *7*  | [No Space Left On Device](./2022/7)  | Clojure    | *20* | [Grove Positioning System](./2022/20) | Java       |
 | *8*  | [Treetop Tree House](./2022/8)       | Python     | *21* | [Monkey Math](./2022/21)              | Javascript |
 | *9*  | [Rope Bridge](./2022/9)              | C#         | *22* | [Monkey Map](./2022/22)               | C++        |
-| *10* | [Cathode-Ray Tube](./2022/10)        | C          |
+| *10* | [Cathode-Ray Tube](./2022/10)        | C          | *23* | [Unstable Diffusion](./2022/23)       | C#         |
 | *11* | [Monkey in the Middle](./2022/11)    | Java       |
 | *12* | [Hill Climbing Algorithm](./2022/12) | Go         |
 | *13* | [Distress Signal](./2022/13)         | Python     |

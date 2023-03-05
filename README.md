@@ -26,14 +26,14 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *8*  | [Treetop Tree House](./2022/8)       | Python     | *21* | [Monkey Math](./2022/21)              | Javascript |
 | *9*  | [Rope Bridge](./2022/9)              | C#         | *22* | [Monkey Map](./2022/22)               | C++        |
 | *10* | [Cathode-Ray Tube](./2022/10)        | C          | *23* | [Unstable Diffusion](./2022/23)       | C#         |
-| *11* | [Monkey in the Middle](./2022/11)    | Java       |
+| *11* | [Monkey in the Middle](./2022/11)    | Java       | *24* | [Blizzard Basin](./2022/24)           | Go         |
 | *12* | [Hill Climbing Algorithm](./2022/12) | Go         |
 | *13* | [Distress Signal](./2022/13)         | Python     |
 
 ### Scripts
 
-There's also a scripts directory that provides the following scripts and how to run them:
+There's also a scripts directory that provides the following script(s) and how to run them:
 
 `python3 ./scripts/create_template.py`
 
-*Creates a template for the year, day, and language I plan on using.*
+*Creates a template for the year and day of the problem to solve and language I'll try to use.*

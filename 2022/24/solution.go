@@ -11,6 +11,11 @@
 //
 // Part 1 -
 // What is the least number of steps it takes to get from the start to the end?
+//
+// Part 2 -
+// One of the elves forgot his snacks at the entrance of the field...
+// What's the least number of steps it takes to get from start to end, back to
+// start, and then back to the end again?
 
 // To run:
 // - 'go run solution.go'
@@ -123,7 +128,7 @@ func printBliz(grid [][]*Space) {
 
 // Recursive function to navigate the blizzard grid in a DFS fashion.
 // Note that it may be wiser to do this as a BFS saving the state of the blizzard grid at each step...
-func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, best *int, visited map[string]bool) {
+func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, endX int, endY int, best *int, visited map[string]bool) {
 	// Step 1) Move the blizzards
 	move := moves + 1
 	next := blizzards[move%len(blizzards)]
@@ -136,8 +141,6 @@ func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, best *int,
 	visited[key] = true
 
 	// Base case 1: we've reached the end
-	endX := len(next[0]) - 2
-	endY := len(next) - 1
 	if cur.y == endY && cur.x == endX {
 		if moves < *best {
 			*best = moves
@@ -158,28 +161,43 @@ func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, best *int,
 	// - Always prioritize right and down
 	// - Try waiting if you can't move right/down
 	// - Otherwise, move up or left
+	var nextSpaces []*Space
 	nextSpace := next[cur.y][cur.x+1] // Right
 	if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
-		navigateBlizzards(blizzards, nextSpace, move, best, visited)
+		nextSpaces = append(nextSpaces, nextSpace)
 	}
-	nextSpace = next[cur.y+1][cur.x] // Down
-	if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
-		navigateBlizzards(blizzards, nextSpace, move, best, visited)
+	// Down (we need to worry about going off-screen)
+	if cur.y < len(next)-1 {
+		nextSpace = next[cur.y+1][cur.x]
+		if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
+			nextSpaces = append(nextSpaces, nextSpace)
+		}
 	}
 	nextSpace = next[cur.y][cur.x] // Wait
 	if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
-		navigateBlizzards(blizzards, nextSpace, move, best, visited)
+		nextSpaces = append(nextSpaces, nextSpace)
 	}
 	nextSpace = next[cur.y][cur.x-1] // Left
 	if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
-		navigateBlizzards(blizzards, nextSpace, move, best, visited)
+		nextSpaces = append(nextSpaces, nextSpace)
 	}
 	// Up (we need to worry about going off-screen)
 	if cur.y > 0 {
 		nextSpace = next[cur.y-1][cur.x] // Get the next state of the current spot
 		if !nextSpace.isWall && len(nextSpace.bliz) == 0 {
-			navigateBlizzards(blizzards, nextSpace, move, best, visited)
+			nextSpaces = append(nextSpaces, nextSpace)
 		}
+	}
+
+	// If we're going back to the start, reverse the directions we prioritize
+	if endY == 0 {
+		for i, j := 0, len(nextSpaces)-1; i < j; i, j = i+1, j-1 {
+			nextSpaces[i], nextSpaces[j] = nextSpaces[j], nextSpaces[i]
+		}
+	}
+
+	for i := 0; i < len(nextSpaces); i++ {
+		navigateBlizzards(blizzards, nextSpaces[i], move, endX, endY, best, visited)
 	}
 }
 
@@ -264,7 +282,21 @@ func main() {
 	// fastest path to the end
 	var best int = math.MaxInt
 	visited := make(map[string]bool)
-	navigateBlizzards(allBlizzards, allBlizzards[0][0][1], 0, &best, visited)
+	endY := len(grid) - 1
+	endX := len(grid[0]) - 2
+	navigateBlizzards(allBlizzards, allBlizzards[0][0][1], 0, endX, endY, &best, visited)
 
-	fmt.Println("Part 1: " + fmt.Sprint(best))
+	fmt.Printf("Part 1: %d\n", best)
+
+	// For Part 2, we need to get back to the start to get those damn snacks...
+	var toStart int = math.MaxInt
+	visited = make(map[string]bool)
+	navigateBlizzards(allBlizzards, allBlizzards[best%len(allBlizzards)][endY][endX], best, 1, 0, &toStart, visited)
+	// And then back to the end again!
+	var toEnd int = math.MaxInt
+	visited = make(map[string]bool)
+	navigateBlizzards(allBlizzards, allBlizzards[toStart%len(allBlizzards)][0][1], toStart, endX, endY, &toEnd, visited)
+
+	fmt.Printf("Part 2: %d\n", toEnd)
+
 }

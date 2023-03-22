@@ -27,7 +27,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *9*  | [Rope Bridge](./2022/9)              | C#         | *22* | [Monkey Map](./2022/22)               | C++        |
 | *10* | [Cathode-Ray Tube](./2022/10)        | C          | *23* | [Unstable Diffusion](./2022/23)       | C#         |
 | *11* | [Monkey in the Middle](./2022/11)    | Java       | *24* | [Blizzard Basin](./2022/24)           | Go         |
-| *12* | [Hill Climbing Algorithm](./2022/12) | Go         |
+| *12* | [Hill Climbing Algorithm](./2022/12) | Go         | *25* | [Full of Hot Air](./2022/25)          | Clojure    |
 | *13* | [Distress Signal](./2022/13)         | Python     |
 
 ### Scripts

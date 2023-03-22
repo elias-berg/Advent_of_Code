@@ -30,10 +30,12 @@ supported_languages = {
   "c":          {"ext": ".c", 
                  "comment": "//"},
   "clojure":    {"ext": ".clj",
-                 "comment": ";;"},
+                 "comment": ";;",
+                 "pre": "(ns solution\n\t(:require [clojure.string :as str]))\n\n",
+                 "post": "\n(defn main []\n)"},
   "go":         {"ext": ".go",
                  "comment": "//",
-                 "post": "\npackage main\n\nfunc main() {\n}"}
+                 "post": "\npackage main\n\nfunc main() {\n\n}"}
 }
 
 #TODO: Add in boilerplate code to parse the input and args

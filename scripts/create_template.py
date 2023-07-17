@@ -7,6 +7,7 @@
 # TODO List:
 # - Add in language-specific run instructions
 # - Add in language-specific file parsing (into a string)
+# - Move 'supported_languages' into a JSON file
 
 # To run:
 # - python3 create_template.py
@@ -46,7 +47,7 @@ supported_languages = {
   "clojure": {
     "ext": ".clj",
     "comment": ";;",
-    "instructions": "- Install `clj`\n- Run `clj solution.clj",
+    "instructions": "- [Install Clojure](https://clojure.org/guides/install_clojure)\n- Run `clj solution.clj",
     "pre": "(ns solution\n  (:require [clojure.string :as str]))\n\n",
     "post": "(defn main []\n  (let [input (slurp \"input.txt\")]))\n\n(main)\n"
   },

@@ -30,6 +30,12 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *12* | [Hill Climbing Algorithm](./2022/12) | Go         | *25* | [Full of Hot Air](./2022/25)          | Clojure    |
 | *13* | [Distress Signal](./2022/13)         | Python     |
 
+### 2021
+
+| Day  | Name                                 | Language   |
+| ---- | ------------------------------------ | ---------- |
+| *1*  | [Sonar Sweep](./2021/1)              | Clojure    |
+
 ### Scripts
 
 There's also a scripts directory that provides the following script(s) and how to run them:

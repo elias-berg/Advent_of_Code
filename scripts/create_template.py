@@ -7,7 +7,6 @@
 # TODO List:
 # - Add in language-specific run instructions
 # - Add in language-specific file parsing (into a string)
-# - Create a README per directory?
 
 # To run:
 # - python3 create_template.py
@@ -18,24 +17,45 @@ import io
 import subprocess
 
 supported_languages = {
-  "python":     {"ext": ".py", 
-                 "comment": "#",
-                 "pre": "#!/usr/bin/env python3\n\n"},
-  "javascript": {"ext": ".js", 
-                 "comment": "//"},
-  "java":       {"ext": ".java", 
-                 "comment": "//"},
-  "c#":         {"ext": ".cs", 
-                 "comment": "//"},
-  "c":          {"ext": ".c", 
-                 "comment": "//"},
-  "clojure":    {"ext": ".clj",
-                 "comment": ";;",
-                 "pre": "(ns solution\n\t(:require [clojure.string :as str]))\n\n",
-                 "post": "\n(defn main []\n)"},
-  "go":         {"ext": ".go",
-                 "comment": "//",
-                 "post": "\npackage main\n\nfunc main() {\n\n}"}
+  "python": {
+    "ext": ".py", 
+    "comment": "#",
+    "instructions": "",
+    "pre": "#!/usr/bin/env python3\n\n"
+  },
+  "javascript": {
+    "ext": ".js",
+    "comment": "//",
+    "instructions": ""
+  },
+  "java": {
+    "ext": ".java", 
+    "comment": "//",
+    "instructions": ""
+  },
+  "c#": {
+    "ext": ".cs", 
+    "comment": "//",
+    "instructions": ""
+  },
+  "c": {
+    "ext": ".c", 
+    "comment": "//",
+    "instructions": ""
+  },
+  "clojure": {
+    "ext": ".clj",
+    "comment": ";;",
+    "instructions": "- Install `clj`\n- Run `clj solution.clj",
+    "pre": "(ns solution\n  (:require [clojure.string :as str]))\n\n",
+    "post": "(defn main []\n  (let [input (slurp \"input.txt\")]))\n\n(main)\n"
+  },
+  "go": {
+    "ext": ".go",
+    "comment": "//",
+    "instructions": "",
+    "post": "\npackage main\n\nfunc main() {\n\n}"
+  }
 }
 
 #TODO: Add in boilerplate code to parse the input and args
@@ -54,9 +74,8 @@ if len(sys.argv) != 1:
 print("==== Create Solution Template ====")
 print("Enter \"quit\" to leave the program at any point.\n")
 
-########################################
-# Get the AoC year, day, and language to
-# create the template for
+############################################################
+# Get the AoC year, day, and language to create the template
 
 # Helper function to continually prompt the user for a value until they
 # enter something within the list of options.
@@ -118,29 +137,39 @@ print("--> Loaded day: \"" + problemName + "\"") # Print the name for display
 
 #TODO: Parse the sample input and create "sample_input.txt"
 
-##############################
-# Now create the template file
+############################################
+# Generate the README and code template file
 
-comment = supported_languages[lang]["comment"]
-file = io.open("solution" + supported_languages[lang]["ext"], "w")
+template = supported_languages[lang]
+comment = template["comment"]
+codeFileName = "solution" + template["ext"]
+
+# Write the standard README
+readme = io.open("README.md", "w")
+readme.writelines(
+  ["# [Advent of Code " + year + " - Day " + day + "](https://adventofcode.com/" + year + "/day/" + day + ") - " + problemName + "\n",
+   "\n",
+   "### [" + codeFileName + "](./" + codeFileName + ")\n",
+   template["instructions"] + "\n",
+   "\n",
+   "### Performance\n",
+   "\n",
+   "| Part | Time |\n",
+   "| ---: | ---: |\n"
+   "|    1 |      |\n",
+   "|    2 |      |\n"])
+readme.close()
+
+# Write the code file stub
 # Add any additional header info if the language uses it,
 # e.g. the python usr/bin line to run the file as a script
-if "pre" in supported_languages[lang]:
-  file.write(supported_languages[lang]["pre"])
-# Write the standard template
-file.writelines(
-  [comment + " Advent of Code " + year + " - Day " + day + "\n",
-   comment + " " + problemName + "\n",
-   comment + "\n",
-   comment + " <Problem Statement>\n",
-   comment + "\n",
-   comment + " Part 1 -\n",
-   comment + "\n"])
+code = io.open(codeFileName, "w")
+if "pre" in template:
+  code.write(template["pre"])
 # Add any post-summary info, like run instructions
-if "post" in supported_languages[lang]:
-  file.write(supported_languages[lang]["post"])
-
-file.close()
+if "post" in template:
+  code.write(template["post"])
+code.close()
 
 # Input file
 if "SESSION" in os.environ and len(os.environ["SESSION"]) > 0:

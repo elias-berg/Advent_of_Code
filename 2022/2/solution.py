@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Advent of Code 2022 - Day 2
-# Rock, Paper, Scissors
-#
 # Given a list of inputs:
 # [A|B|C] [X|Y|Z]
 # Figure out what your final score is given:
@@ -22,8 +19,10 @@
 # 6 points for a win
 # 3 points for a draw
 
-# To run:
-# - python3 solution.py
+import time
+
+def now():
+    return round(time.time() * 1000)
 
 def readInput():
     input = open("input.txt", "r")
@@ -64,16 +63,25 @@ def rockPaperScissors_part2(them, me):
     # Unexpected edge case:
     return 0
 
-def processMoves(ary):
+def processMoves(ary, isPart1):
     score = 0
     for x in range(0, len(ary)):
         moves = ary[x].split(" ")
         them = moves[0]
         me = moves[1]
-        points = rockPaperScissors_part2(them, me)
+        points = 0 # Default until we pick a part...
+        if isPart1:
+            points = rockPaperScissors_part1(them, me)
+        else:
+            points = rockPaperScissors_part2(them, me)
         score += points
     return score
 
 ary = readInput()
-output = processMoves(ary)
-print(output)
+start = now()
+part1 = processMoves(ary, True)
+print("Part 1: " + str(part1) + " (" + str(now() - start)  + "ms)")
+
+start = now()
+part2 = processMoves(ary, False)
+print("Part 2: " + str(part2) + " (" + str(now() - start)  + "ms)")

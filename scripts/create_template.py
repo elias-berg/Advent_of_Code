@@ -21,7 +21,7 @@ supported_languages = {
   "python": {
     "ext": ".py", 
     "comment": "#",
-    "instructions": "",
+    "instructions": "- [Install python3](https://www.python.org/downloads/)\n- Run `python3 solution.py`",
     "pre": "#!/usr/bin/env python3\n\n"
   },
   "javascript": {

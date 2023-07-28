@@ -17,7 +17,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | Day  | Name                                 | Language   | Day  | Name                                  | Language   |
 | ---- | ------------------------------------ | ---------- | ---- | ------------------------------------- | ---------- |
 | *1*  | [Calorie Counting](./2022/1)         | Clojure    | *14* | [Regolith Reservoir](./2022/14)       | Node.js    |
-| *2*  | [Rock Paper Scissors](./2022/2)      | Python     | *15* | [Beacon Exclusion Zone](./2022/15)    | Clojure    |
+| *2*  | [Rock, Paper, Scissors](./2022/2)    | Python     | *15* | [Beacon Exclusion Zone](./2022/15)    | Clojure    |
 | *3*  | [Rucksack Reorganization](./2022/3)  | Javascript | *16* | [Proboscidea Volcanium](./2022/16)    | C#         |
 | *4*  | [Camp Cleanup](./2022/4)             | Java       | *17* | [Pyroclastic Flow](./2022/17)         | Typescript |
 | *5*  | [Supply Stacks](./2022/5)            | Javascript | *18* | [Boiling Boulders](./2022/18)         | Python     |
@@ -35,6 +35,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | Day  | Name                                 | Language   |
 | ---- | ------------------------------------ | ---------- |
 | *1*  | [Sonar Sweep](./2021/1)              | Clojure    |
+| *2*  | [Dive!](./2021/2)                    | Go         |
 
 ### Scripts
 

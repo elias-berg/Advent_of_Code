@@ -1,6 +1,3 @@
-// Advent of Code 2022 - Day 12
-// Hill Climbing Algorithm
-//
 // Trying to reunite with the elves, you can't seem to get a clear enough
 // singal from your current location. You see t higher location you'd like
 // to get to with elevation represented by 'z'. The lowest elevation, which
@@ -17,17 +14,20 @@
 // so now find the shortest path to E where S could be ANY of the spaces
 // starting at elevation 'a'.
 
-// To run:
-// - Make sure you have Go installed on your machine
-// - Use the command: 'go run solution.go'
-
 package main
 
 import (
 	"fmt"
 	"math"
 	"os"
+	"time"
 )
+
+func now() int64 {
+	now := time.Now()
+	nanos := now.UnixNano()
+	return nanos / 1000000
+}
 
 // A struct representing a mountain node in our graph.
 type Node struct {
@@ -120,8 +120,13 @@ func Dijkstra(graph [][]*Node) {
 }
 
 func main() {
+	inputFile := "input.txt"
+	if len(os.Args) == 2 && os.Args[1] == "-sample" {
+		inputFile = "sample_input.txt"
+	}
+
 	// File reading
-	data, error := os.ReadFile("input.txt")
+	data, error := os.ReadFile(inputFile)
 	if error != nil {
 		fmt.Println(error.Error())
 		return
@@ -159,6 +164,7 @@ func main() {
 	// Set all of the siblings after we parse out the entire graph.
 	// Yeah, this is another O(N) loop where N is the total number of
 	// vertices, but this way we have the entire graph available.
+	start := now()
 	for r := 0; r < len(graph); r++ {
 		for c := 0; c < len(graph[r]); c++ {
 			curNode := graph[r][c]
@@ -179,10 +185,11 @@ func main() {
 
 	// Run Dijkstra's Algorithm
 	Dijkstra(graph)
-	fmt.Printf("Part 1: %d\n", endNode.dist)
+	fmt.Printf("Part 1: %d (%dms)\n", endNode.dist, (now() - start))
 
 	// Part 2:
 	// Reset all distances, but set all of the possible starting point distances to 0
+	start = now()
 	for r := 0; r < len(graph); r++ {
 		for c := 0; c < len(graph[r]); c++ {
 			graph[r][c].visited = false
@@ -193,5 +200,5 @@ func main() {
 		}
 	}
 	Dijkstra(graph)
-	fmt.Printf("Part 2: %d\n", endNode.dist)
+	fmt.Printf("Part 2: %d (%dms)\n", endNode.dist, (now() - start))
 }

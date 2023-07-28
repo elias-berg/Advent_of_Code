@@ -55,7 +55,7 @@ supported_languages = {
     "ext": ".go",
     "comment": "//",
     "instructions": "",
-    "post": "\npackage main\n\nfunc main() {\n\n}"
+    "post": "package main\n\nimport (\n	\"fmt\"\n	\"os\"\n)\n\nfunc main() {\ndata, error := os.ReadFile(\"input.txt\")\n  if error != nil {\n    fmt.Println(error.Error())\n    return\n  }\n}"
   }
 }
 

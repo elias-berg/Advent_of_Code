@@ -1,6 +1,3 @@
-// Advent of Code 2022 - Day 24
-// Blizzard Basin
-//
 // On the way to the extraction point, now that all the star fruit are planted
 // for next year, you come across a blizzard field. The blizzards are going in
 // one direction, each, infinitely, and when they reach a wall, they go back to
@@ -17,10 +14,6 @@
 // What's the least number of steps it takes to get from start to end, back to
 // start, and then back to the end again?
 
-// To run:
-// - 'go run solution.go'
-// - 'go run solution.go -sample' to run the sample input
-
 package main
 
 import (
@@ -28,7 +21,14 @@ import (
 	"math"
 	"os"
 	"strings"
+	"time"
 )
+
+func now() int64 {
+	now := time.Now()
+	nanos := now.UnixNano()
+	return nanos / 1000000
+}
 
 type Space struct {
 	x      int
@@ -148,7 +148,7 @@ func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, endX int, 
 		return
 	}
 	// Base case 2: we've surpassed the best we've seen so far; not worth continuing
-	if moves > *best {
+	if moves >= *best {
 		return
 	}
 	// Base case 3: the distance from the end is greater than the current best
@@ -265,6 +265,9 @@ func main() {
 		grid = append(grid, row)
 	}
 
+	// Start the Part 1 timer after input
+	start := now()
+
 	// I figure there can only be so many configurations of blizzards, so we're going to
 	// try and calculate them all up-front, which wouldn't fly if we had an enormous grid.
 	var allBlizzards [][][]*Space
@@ -274,7 +277,7 @@ func main() {
 		if !checkSame(next, allBlizzards[0]) {
 			allBlizzards = append(allBlizzards, next)
 		} else {
-			i = 1
+			i = 1 // Set to 1 or else we'd loop forever (go while-loop)
 		}
 	}
 
@@ -286,9 +289,10 @@ func main() {
 	endX := len(grid[0]) - 2
 	navigateBlizzards(allBlizzards, allBlizzards[0][0][1], 0, endX, endY, &best, visited)
 
-	fmt.Printf("Part 1: %d\n", best)
+	fmt.Printf("Part 1: %d (%dms)\n", best, now()-start)
 
 	// For Part 2, we need to get back to the start to get those damn snacks...
+	start = now()
 	var toStart int = math.MaxInt
 	visited = make(map[string]bool)
 	navigateBlizzards(allBlizzards, allBlizzards[best%len(allBlizzards)][endY][endX], best, 1, 0, &toStart, visited)
@@ -297,6 +301,5 @@ func main() {
 	visited = make(map[string]bool)
 	navigateBlizzards(allBlizzards, allBlizzards[toStart%len(allBlizzards)][0][1], toStart, endX, endY, &toEnd, visited)
 
-	fmt.Printf("Part 2: %d\n", toEnd)
-
+	fmt.Printf("Part 2: %d (%dms)\n", toEnd, now()-start)
 }

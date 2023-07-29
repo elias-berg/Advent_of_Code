@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Advent of Code 2022 - Day 13
-# Distress Signal
-#
 # Now that you're up high, you receive a distress signal from the elves.
 # The input is a series of pairs of messages where each inidividual message
 # is an array composed of integers or nested arrays (also of integers).
@@ -24,9 +21,6 @@
 # [[2]] and [[6]]
 # After sorting all of the packets using the rules from part 1, what is
 # the product of the indices of the two sorted divider packets?
-
-# To run:
-# - python3 solution.py
 
 from enum import Enum
 

@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Advent of Code 2022 - Day 18
-# Boiling Boulders
-#
 # You get out of the cave with the elephants, but lava is flowing out
 # of the volcano past you into a pond. You scan a droplet flying by since
 # the speed the lava will cool down is based on how big the droplets are.
@@ -17,12 +14,6 @@
 # any surface coordinate that's completely blocked on all 6 sides by
 # surface area creates an air bubble that won't speed up the cooling.
 # So what is the surface area of only the external surface area?
-
-# To run:
-# - python3 solution.py
-
-# To run the sample input:
-# - python3 solution.py -sample
 
 import sys;
 

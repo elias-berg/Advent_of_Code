@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"strings"
 	"time"
@@ -134,7 +133,7 @@ func navigateBlizzards(blizzards [][][]*Space, cur *Space, moves int, endX int, 
 	next := blizzards[move%len(blizzards)]
 
 	// Base case 0: we've been here at this same relative point in time before...
-	key := fmt.Sprintf("%d-%d,%d", moves, cur.x, cur.y)
+	key := fmt.Sprintf("%d-%d-%d-%d", moves, move%len(blizzards), cur.x, cur.y)
 	if visited[key] {
 		return
 	}
@@ -283,7 +282,7 @@ func main() {
 
 	// Now that we have the blizzard grid, recursively try to figure out the
 	// fastest path to the end
-	var best int = math.MaxInt
+	var best int = 100_000
 	visited := make(map[string]bool)
 	endY := len(grid) - 1
 	endX := len(grid[0]) - 2
@@ -293,11 +292,11 @@ func main() {
 
 	// For Part 2, we need to get back to the start to get those damn snacks...
 	start = now()
-	var toStart int = math.MaxInt
+	var toStart int = 100_000
 	visited = make(map[string]bool)
 	navigateBlizzards(allBlizzards, allBlizzards[best%len(allBlizzards)][endY][endX], best, 1, 0, &toStart, visited)
 	// And then back to the end again!
-	var toEnd int = math.MaxInt
+	var toEnd int = 100_000
 	visited = make(map[string]bool)
 	navigateBlizzards(allBlizzards, allBlizzards[toStart%len(allBlizzards)][0][1], toStart, endX, endY, &toEnd, visited)
 

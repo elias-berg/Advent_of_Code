@@ -19,13 +19,14 @@
 # 6 points for a win
 # 3 points for a draw
 
+import sys
 import time
 
 def now():
     return round(time.time() * 1000)
 
-def readInput():
-    input = open("input.txt", "r")
+def readInput(fileName):
+    input = open(fileName, "r")
     commands = input.read().split("\n")
     return commands
 
@@ -77,7 +78,16 @@ def processMoves(ary, isPart1):
         score += points
     return score
 
-ary = readInput()
+#########
+# Script
+# Here be where the code runs
+#########
+
+fileName = "input.txt"
+if len(sys.argv) == 2 and sys.argv[1] == "-sample":
+  fileName = "sample_input.txt"
+
+ary = readInput(fileName)
 start = now()
 part1 = processMoves(ary, True)
 print("Part 1: " + str(part1) + " (" + str(now() - start)  + "ms)")

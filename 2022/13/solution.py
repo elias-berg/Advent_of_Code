@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# Now that you're up high, you receive a distress signal from the elves.
-# The input is a series of pairs of messages where each inidividual message
-# is an array composed of integers or nested arrays (also of integers).
-# The first message in the pair is considered the left, the second the right.
-#
 # Part 1 -
 # Using the following rules, what is the sum of all the indices of messages
 # in the set where the messages are "out of order"?
@@ -22,13 +17,16 @@
 # After sorting all of the packets using the rules from part 1, what is
 # the product of the indices of the two sorted divider packets?
 
+import sys
 from enum import Enum
+import time
 
-INPUT_FILE = "input.txt"
+def now():
+  return round(time.time() * 1000)
 
 # Convert the input into a pair of tuples
-def readInput():
-    input = open(INPUT_FILE, "r")
+def readInput(fileName):
+    input = open(fileName, "r")
     lines = input.read().split("\n")
 
     i = 0
@@ -95,8 +93,12 @@ def comPAIR(pair):
 
 # -----------------------------
 # Main running code starts here
-pairs = readInput()
+fileName = "input.txt"
+if len(sys.argv) == 2 and sys.argv[1] == "-sample":
+  fileName = "sample_input.txt"
+pairs = readInput(fileName)
 
+start = now()
 sum = 0
 for i in range(0, len(pairs)):
   # If we end on Continue, then it means we got to the end and nothing
@@ -104,10 +106,11 @@ for i in range(0, len(pairs)):
   if comPAIR(pairs[i]) != Evaluation.OutOfOrder:
     sum = sum + (i + 1)
 
-print("Part 1: " + str(sum))
+print("Part 1: " + str(sum) + " (" + str(now() - start) + "ms)")
 
 # Part 2: add the divider packets [[2]] and [[6]], sort,
 # then locate [[2]] and [[6]] and multiple their indices
+start = now()
 allPackets = [[[2]], [[6]]]
 for pair in pairs:
   allPackets.append(pair[0])
@@ -141,4 +144,4 @@ for i in range(0, len(allPackets) - 1):
   if packet2 >= 0 and packet6 >= 0:
     break
 
-print("Part 2: " + str(packet2 * packet6))
+print("Part 2: " + str(packet2 * packet6) + " (" + str(now() - start) + "ms)")

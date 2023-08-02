@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-# You get out of the cave with the elephants, but lava is flowing out
-# of the volcano past you into a pond. You scan a droplet flying by since
-# the speed the lava will cool down is based on how big the droplets are.
-# The device can only scan in low-resolution 1x1x1 coordinates, though.
-#
 # Part 1 -
 # Given the input of all the 1x1x1 coodinates the lava "droplet" is
 # comprised of, what is the surface area of the droplet?
@@ -16,8 +11,10 @@
 # So what is the surface area of only the external surface area?
 
 import sys;
+import time;
 
-INPUT_FILE = "input.txt" # For ease-of-use
+def now():
+  return round(time.time() * 1000)
 
 ############
 # Functions
@@ -25,8 +22,8 @@ INPUT_FILE = "input.txt" # For ease-of-use
 ############
 
 # Reads the input file and parses it into a collection of coordinate-arrays
-def readInput():
-    input = open(INPUT_FILE, "r")
+def readInput(fileName):
+    input = open(fileName, "r")
     coordLines = input.read().split("\n")
     coords = []
     for coordStr in coordLines:
@@ -113,12 +110,14 @@ def removeOutsideEdges(droplet, edges, entireMap, minCoord):
 #########
 
 # Some simple code to let a -sample modifier let us run the sample input
+fileName = "input.txt"
 if len(sys.argv) == 2 and sys.argv[1] == "-sample":
-  INPUT_FILE = "sample_input.txt"
+  fileName = "sample_input.txt"
 
-coords = readInput()
+coords = readInput(fileName)
 
 # Construct the droplet
+start = now()
 droplet = {} # It's a map of maps
 # We also want to keep track of the min and max x/y/z coordinate values
 minCoord = 100 # Should be safe to make it only this high
@@ -147,10 +146,11 @@ for coordStr in droplet.keys():
     else:
       edgeDict[edgeStr] = edgeDict[edgeStr] + 1
 
-print("Part 1: " + str(part1))
+print("Part 1: " + str(part1) + " (" + str(now() - start) + "ms)")
 
 # For part 2, we'll create an entire mapping of the 3D coordinates with 1 extra unit in
 # each direction to represent the "outside"
+start = now()
 minCoord = minCoord - 1
 maxCoord = maxCoord + 2 # Add an extra 1 since the "range" function is non-inclusive
 entireMap = {}
@@ -167,4 +167,4 @@ part2 = 0
 for edgeStr in edgeDict.keys():
   part2 = part2 + edgeDict[edgeStr]
 
-print("Part 2: " + str(part1 - part2))
+print("Part 2: " + str(part1 - part2) + " (" + str(now() - start) + "ms)")

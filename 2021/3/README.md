@@ -3,10 +3,11 @@
 ### [solution.py](./solution.py)
 - [Install python3](https://www.python.org/downloads/)
 - Run `python3 solution.py`
+- Run `python3 solution.py -sample` to run against the sample input
 
 ### Performance
 
 | Part | Time |
 | ---: | ---: |
-|    1 |  3ms |
-|    2 |      |
+|    1 | ~2ms |
+|    2 | ~1ms |

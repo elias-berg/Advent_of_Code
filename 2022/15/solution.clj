@@ -2,9 +2,6 @@
   (:require [clojure.string :as str])
   (:import [java.util UUID]))
 
-;; Advent of Code 2022 - Day 15
-;; Beacon Exclusion Zone
-;;
 ;; The distress signal you received lead you to a series of tunnels.
 ;; You deploy sensors to check for where the distress beacons are coming from.
 ;; The sensors will fan out and rest in various tunnels and report back
@@ -23,10 +20,7 @@
 ;; What is the tuning frequency of the one undetected spot:
 ;; (X * 4,000,000) + Y?
 
-;; To run:
-;; - Start a repl (e.g. 'lein repl')
-;; - Connect Calva to the running repl
-;; - Run (main) in the repl
+(defn now [] (inst-ms (new java.util.Date)))
 
 (def USE-SAMPLE false)
 
@@ -155,10 +149,9 @@
         sensors-within-d (filter #(<= (distance {:x (:x %) :y row} %) (:d %)) sensors)
         start (get-min-x sensors-within-d)
         end   (get-max-x sensors-within-d)]
-    (println "Part 1:"
-             (-
-              (evaluate-row row sensors-within-d start end)
-              (count (filter #(= row (:y %1)) beacons))))))
+    (-
+     (evaluate-row row sensors-within-d start end)
+     (count (filter #(= row (:y %1)) beacons)))))
 
 ;;;;;;;;;;;;;;
 ;; Part 2 Code
@@ -267,7 +260,7 @@
         ; Extract the (x, y) with default values of 0 in case of errors
         x (or (first position) 0)
         y (or (second position) 0)]
-    (println "Part 2:" (+ (* x 4000000) y))))
+    (+ (* x 4000000) y)))
 
 ;;;;;;;;;;;;;;
 ;; Code to Run
@@ -279,5 +272,11 @@
         all     (parse data)
         sensors (filter #(= (:type %) :sensor) all)
         beacons (filter #(= (:type %) :beacon) all)]
-    (do-part-1 sensors beacons)
-    (do-part-2 sensors)))
+    (let [start (now)]
+      (println "Part 1:" (do-part-1 sensors beacons)
+               (str "(" (- (now) start) "ms)")))
+    (let [start (now)]
+      (println "Part 2:" (do-part-2 sensors)
+               (str "(" (- (now) start) "ms)")))))
+
+(main)

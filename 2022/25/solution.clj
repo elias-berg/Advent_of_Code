@@ -1,9 +1,6 @@
 (ns solution
   (:require [clojure.string :as str]))
 
-;; Advent of Code 2022 - Day 25
-;; Full of Hot Air
-;;
 ;; You've reached the extraction point! It turns out everyone is to be extracted via
 ;; hot air balloon. The balloons need to be inflated with various amounts of hot fuel
 ;; via fuel heating machine. Each balloon has a heat requirement and to which we want to
@@ -21,8 +18,7 @@
 ;; Part 1 -
 ;; Given all of the SNAFU numbers, what is their sum written in SNAFU-form?
 
-;; To run:
-;; - 'clj solution.clj'
+(defn now [] (inst-ms (new java.util.Date)))
 
 (defn char->value
   "Given a SNAFU character, convert and return it's decimal value."
@@ -114,10 +110,12 @@
                     "sample_input.txt"
                     "input.txt")
         input (slurp inputFile)
+        start (now) ;; Start the perf timer
         snafu-list (str/split input #"\n")
         sum   (add-snafus snafu-list)
         val   (decimal->snafu sum)]
-		(println "Part 1:" val)))
+		(println "Part 1:" val
+           (str "(" (- (now) start) "ms)"))))
 
 ;; So we can run it as a script
 #_(main true)

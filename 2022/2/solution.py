@@ -23,60 +23,60 @@ import sys
 import time
 
 def now():
-    return round(time.time() * 1000)
+  return round(time.time() * 1000)
 
 def readInput(fileName):
-    input = open(fileName, "r")
-    commands = input.read().split("\n")
-    return commands
+  input = open(fileName, "r")
+  commands = input.read().split("\n")
+  return commands
 
 # Solution code for part 1
 def rockPaperScissors_part1(them, me):
-    if them == "A": # Rock
-        if me == "X": return 1 + 3 # Draw
-        if me == "Y": return 2 + 6 # Win
-        if me == "Z": return 3 + 0 # Loss
-    if them == "B": # Paper
-        if me == "X": return 1 + 0 # Loss
-        if me == "Y": return 2 + 3 # Draw
-        if me == "Z": return 3 + 6 # Win
-    if them == "C": # Scissors
-        if me == "X": return 1 + 6 # Win
-        if me == "Y": return 2 + 0 # Loss
-        if me == "Z": return 3 + 3 # Draw
-    # Unexpected edge case:
-    return 0
+  if them == "A": # Rock
+    if me == "X": return 1 + 3 # Draw
+    if me == "Y": return 2 + 6 # Win
+    if me == "Z": return 3 + 0 # Loss
+  if them == "B": # Paper
+    if me == "X": return 1 + 0 # Loss
+    if me == "Y": return 2 + 3 # Draw
+    if me == "Z": return 3 + 6 # Win
+  if them == "C": # Scissors
+    if me == "X": return 1 + 6 # Win
+    if me == "Y": return 2 + 0 # Loss
+    if me == "Z": return 3 + 3 # Draw
+  # Unexpected edge case:
+  return 0
 
 # Solution code for part 2
 def rockPaperScissors_part2(them, me):
-    if them == "A": # Rock
-        if me == "X": return 3 + 0 # Lose (Scissors)
-        if me == "Y": return 1 + 3 # Draw (Rock)
-        if me == "Z": return 2 + 6 # Win  (Paper)
-    if them == "B": # Paper
-        if me == "X": return 1 + 0 # Lose (Rock)
-        if me == "Y": return 2 + 3 # Draw (Paper)
-        if me == "Z": return 3 + 6 # Win  (Scissors)
-    if them == "C": # Scissors
-        if me == "X": return 2 + 0 # Lose (Paper)
-        if me == "Y": return 3 + 3 # Draw (Scissors)
-        if me == "Z": return 1 + 6 # Win  (Rock)
-    # Unexpected edge case:
-    return 0
+  if them == "A": # Rock
+    if me == "X": return 3 + 0 # Lose (Scissors)
+    if me == "Y": return 1 + 3 # Draw (Rock)
+    if me == "Z": return 2 + 6 # Win  (Paper)
+  if them == "B": # Paper
+    if me == "X": return 1 + 0 # Lose (Rock)
+    if me == "Y": return 2 + 3 # Draw (Paper)
+    if me == "Z": return 3 + 6 # Win  (Scissors)
+  if them == "C": # Scissors
+    if me == "X": return 2 + 0 # Lose (Paper)
+    if me == "Y": return 3 + 3 # Draw (Scissors)
+    if me == "Z": return 1 + 6 # Win  (Rock)
+  # Unexpected edge case:
+  return 0
 
 def processMoves(ary, isPart1):
-    score = 0
-    for x in range(0, len(ary)):
-        moves = ary[x].split(" ")
-        them = moves[0]
-        me = moves[1]
-        points = 0 # Default until we pick a part...
-        if isPart1:
-            points = rockPaperScissors_part1(them, me)
-        else:
-            points = rockPaperScissors_part2(them, me)
-        score += points
-    return score
+  score = 0
+  for x in range(0, len(ary)):
+    moves = ary[x].split(" ")
+    them = moves[0]
+    me = moves[1]
+    points = 0 # Default until we pick a part...
+    if isPart1:
+      points = rockPaperScissors_part1(them, me)
+    else:
+      points = rockPaperScissors_part2(them, me)
+    score += points
+  return score
 
 #########
 # Script

@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# Advent of Code 2022 - Day 8
-# Treetop Tree House
-#
 # The elves planted a bunch of trees, which are represented
 # by a 2D array of tree heights.
 # - 0 indicates no tree/shortest possible height
@@ -21,13 +18,15 @@
 # So if you can see 1N, 2S, 3E, 4W trees, then the scenery
 # score is 1 * 2 * 3 * 4. What's the max scenery score?
 
-# To run:
-# - Make sure you have python3 installed
-# - From the command line, type 'python3 solution.py'
+import sys
+import time
+
+def now():
+  return round(time.time() * 1000)
 
 # Reads the input file and parses it into a 2D array of trees
-def readInput():
-    input = open("input.txt", "r")
+def readInput(fileName):
+    input = open(fileName, "r")
     treeLines = input.read().split("\n")
     trees = []
     for treeLine in treeLines:
@@ -136,7 +135,12 @@ def maxSceneryScore(trees):
       if curScore > bestScore: bestScore = curScore
   return bestScore
 
+fileName = "input.txt"
+if len(sys.argv) == 2 and sys.argv[1] == "-sample":
+  fileName = "sample_input.txt"
 
-trees = readInput()
-print("Part 1: " + str(countVisible(trees)))
-print("Part 2: " + str(maxSceneryScore(trees)))
+trees = readInput(fileName)
+start = now()
+print("Part 1: " + str(countVisible(trees)) + " (" + str(now() - start) + "ms)")
+start = now()
+print("Part 2: " + str(maxSceneryScore(trees)) + " (" + str(now() - start) + "ms)")

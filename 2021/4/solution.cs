@@ -94,6 +94,7 @@ public class Solution
   {
     Stopwatch s = new Stopwatch();
     s.Start();
+
     int part1 = 0;
     foreach (string draw in draws) {
       bool bingo = false;
@@ -107,8 +108,38 @@ public class Solution
       if (bingo) break;
     }
     s.Stop();
-    
+
     System.Console.WriteLine("Part 1: " + part1 + " (" + s.Elapsed.Milliseconds + "ms)");
+  }
+
+  public static void Part2(string[] draws, List<Board> boards)
+  {
+    Stopwatch s = new Stopwatch();
+    s.Start();
+
+    int part2 = 0;
+    List<Board> nextBoards = new List<Board>();
+    foreach (string draw in draws) {
+      bool bingo = false;
+      foreach (Board b in boards) {
+        bingo = b.MarkNumber(draw);
+        // If we're on the last board to get bingo
+        if (bingo && boards.Count == 1) {
+          part2 = int.Parse(draw) * b.BoardSum();
+        }
+        if (!bingo) {
+          nextBoards.Add(b);
+        }
+      }
+      if (part2 > 0) break; // We'll use a value here to indicate completion
+
+      // Reset the list of boards each time, dropping off the previous boards that got BINGO
+      boards = nextBoards;
+      nextBoards = new List<Board>();
+    }
+    s.Stop();
+
+    System.Console.WriteLine("Part 2: " + part2 + " (" + s.Elapsed.Milliseconds + "ms)");
   }
 
   public static void Main(string[] args)
@@ -139,5 +170,6 @@ public class Solution
     
     // Boards are set up, now we cross off each number!
     Part1(draws, boards);
+    Part2(draws, boards);
   }
 }

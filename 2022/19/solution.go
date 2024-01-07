@@ -30,8 +30,8 @@ import (
 	"time"
 )
 
-func maxOf(num ...int) int {
-	max := 0
+func maxOf(num ...uint32) uint32 {
+	var max uint32 = 0
 	for i := 0; i < len(num); i++ {
 		val := num[i]
 		if val > max {
@@ -59,7 +59,7 @@ func maxOf(num ...int) int {
  * Indices 3 and 4 are needed to make an obsidian-collecting robot
  * Indices 5 and 6 are needed to make a geode-cracking robot
  */
-func parseInput(fileName string) [][]int {
+func parseInput(fileName string) [][]uint32 {
 	data, error := os.ReadFile(fileName)
 	if error != nil {
 		fmt.Println(error.Error())
@@ -70,7 +70,7 @@ func parseInput(fileName string) [][]int {
 	// Note that Go cannot be directly turned into a string, but slices can
 	dataStr := string(data[:])
 
-	var blueprints [][]int // Declare it
+	var blueprints [][]uint32 // Declare it
 
 	bpLines := strings.Split(dataStr, "\n")
 	r := regexp.MustCompile("[0-9]+")
@@ -84,10 +84,10 @@ func parseInput(fileName string) [][]int {
 		}
 
 		// Not the prettiest way to write it
-		var blueprint []int
+		var blueprint []uint32
 		for m := 0; m < len(matches); m++ { // This should be of length 6 (bp#, ore, ore, ore, clay, ore, ob)
 			val, _ := strconv.Atoi(matches[m]) // We expect no errors here
-			blueprint = append(blueprint, val)
+			blueprint = append(blueprint, uint32(val))
 		}
 		// At index 1, 2, 3, and 5, we see get the amounts of standard ore to make a robot,
 		// so this is putting the max number of ore to make any robot into that 7th index of `blueprints`
@@ -101,56 +101,54 @@ func parseInput(fileName string) [][]int {
 
 /**
  * Helper function to check if we can actually construct a specific type of
- * robot. Returns true if we can, false otherwise. Basically just parses
- * the 32-bit int of rocks into the blueprint robot costs.
+ * robot. Basically just parses the 32-bit int of rocks into the blueprint robot costs.
  */
-func canConstruct(index int, blueprint []int, rocks uint32) bool {
+func canConstruct(blueprint []uint32, rocks uint32) (bool, bool, bool, bool) {
 	// The mapping goes:
 	// index 0 -> blueprint[1] and rocks[0]
 	// index 1 -> blueprint[2] and rocks[0]
 	// index 2 -> blueprint[3] and rocks[0] with blueprint[4] and rocks[1]
 	// index 3 -> blueprint[5] and rocks[0] with blueprint[6] and rocks[2]
-	if index == 0 { // Ore robot
-		return getOre(rocks) >= blueprint[1]
-	}
-	if index == 1 { // Clay robot
-		return getOre(rocks) >= blueprint[2]
-	}
-	if index == 2 { // Obsidian robot
-		return getOre(rocks) >= blueprint[3] && getClay(rocks) >= blueprint[4]
-	}
-	if index == 3 { // Geode robot
-		return getOre(rocks) >= blueprint[5] && getObsidian(rocks) >= blueprint[6]
-	}
-	// Default case; should never happen
-	return false
+	oreRobot := ore(rocks) >= blueprint[1]
+	clayRobot := ore(rocks) >= blueprint[2]
+	obsidianRobot := ore(rocks) >= blueprint[3] && clay(rocks) >= blueprint[4]
+	geodeRobot := ore(rocks) >= blueprint[5] && obsidian(rocks) >= blueprint[6]
+	return oreRobot, clayRobot, obsidianRobot, geodeRobot
 }
 
 /**
  * Helper function to actually decrement the rocks by the cost
  * of the robot.
  */
-func consumeRocks(index int, blueprint []int, rocks uint32) uint32 {
+func consumeRocks(robotType int, blueprint []uint32, rocks uint32) uint32 {
 	var val uint32
-	if index == 0 { // Ore robot
-		val = uint32(blueprint[1])
+	if robotType == OreRobot {
+		val = blueprint[1]
 	}
-	if index == 1 { // Clay robot
-		val = uint32(blueprint[2])
+	if robotType == ClayRobot {
+		val = blueprint[2]
 	}
-	if index == 2 { // Obsidian robot
-		val = uint32(blueprint[3]) + (uint32(blueprint[4]) << 8)
+	if robotType == ObsidianRobot {
+		val = blueprint[3] + (blueprint[4] << 8)
 	}
-	if index == 3 { // Geode robot
-		val = uint32(blueprint[5]) + (uint32(blueprint[6]) << 16)
+	if robotType == GeodeRobot {
+		val = uint32(blueprint[5]) + (blueprint[6] << 16)
 	}
 	return (rocks - val)
 }
 
+// For the sake of readability!
+const (
+	OreRobot      int = 0
+	ClayRobot         = 1
+	ObsidianRobot     = 2
+	GeodeRobot        = 3
+)
+
 /**
  * Recursive function to run through all possible iterations of the robot creation and mining operation.
  */
-func runRecurse(bp []int, robots uint32, rocks uint32, nextRobot int, max *int, minutes int) {
+func runRecurse(blueprint []uint32, robots uint32, rocks uint32, nextRobot int, max *uint32, minutes int, cache map[string]bool) {
 	// First we need all the robots to collect ore
 	newRocks := rocks + robots
 
@@ -162,76 +160,89 @@ func runRecurse(bp []int, robots uint32, rocks uint32, nextRobot int, max *int, 
 
 	// Base case: we've run out of minutes, so count up the geodes and calculate the quality level
 	if minutes == 1 {
-		geodes := getGeodes(newRocks)
+		geodes := geodes(newRocks)
 		if geodes > *max {
 			*max = geodes
 		}
 	} else {
 		minLeft := minutes - 1
-		// Let's try and prune this branch by seeing if the total number of Geodes we could
-		// still collect is less than the max we've seen by now
-		geoRobots := getGeodes(robots)
-		possibleGeodes := getGeodes(rocks) // Start the current number of geodes
-		for i := 0; i < minutes; i++ {
-			geoRobots++ // We can create one geode robot
-			possibleGeodes += geoRobots
-		}
-		if possibleGeodes < *max {
+
+		// First let's see if we've come across this state before and quit early if we've hit this state
+		key := strconv.Itoa(minLeft) + "-" + strconv.Itoa(int(newRocks)) + "-" + strconv.Itoa(int(newRobots))
+		_, exists := cache[key]
+		if exists {
 			return
+		} else {
+			cache[key] = true
 		}
 
-		// Now go through and recurse on each type of robot you can create.
-		// Always try to create the most important robot, but also don't create
-		// any more robots than the max number of materials we need to create that robot
-		if canConstruct(3, bp, newRocks) {
-			runRecurse(bp, newRobots, consumeRocks(3, bp, newRocks), 3, max, minLeft)
+		// Now let's try and prune this branch by seeing if the total number of Geodes we could
+		// still collect is less than the max we've seen by now, but only if we've seen a max
+		if *max > 0 {
+			geoRobots := geodes(robots)
+			possibleGeodes := geodes(rocks) // Start the current number of geodes
+			for i := 0; i < minutes; i++ {
+				geoRobots++ // We can create one geode robot
+				possibleGeodes += geoRobots
+			}
+			if possibleGeodes < *max {
+				return
+			}
 		}
-		if canConstruct(2, bp, newRocks) && getObsidian(newRobots) < bp[6] {
-			runRecurse(bp, newRobots, consumeRocks(2, bp, newRocks), 2, max, minLeft)
+
+		// Now go through and recurse on each type of robot you can create...
+		oreRobo, clayRobo, obsRobo, geoRobo := canConstruct(blueprint, newRocks)
+
+		// We should ALWAYS construct a Geode robot if we have the chance since that increases blueprint score
+		if geoRobo {
+			runRecurse(blueprint, newRobots, consumeRocks(GeodeRobot, blueprint, newRocks), GeodeRobot, max, minLeft, cache)
+		} else {
+			// Don't construct more than the minimum we need to create that specific type of robot,
+			// hence we have limitations on say creating more obsidian robots than the number of obsidian
+			// it takes to construct a single robot
+			if obsRobo && obsidian(newRobots) < blueprint[6] {
+				runRecurse(blueprint, newRobots, consumeRocks(ObsidianRobot, blueprint, newRocks), ObsidianRobot, max, minLeft, cache)
+			}
+			if clayRobo && clay(newRobots) < blueprint[4] {
+				runRecurse(blueprint, newRobots, consumeRocks(ClayRobot, blueprint, newRocks), ClayRobot, max, minLeft, cache)
+			}
+			if oreRobo && ore(newRobots) < blueprint[7] {
+				runRecurse(blueprint, newRobots, consumeRocks(OreRobot, blueprint, newRocks), OreRobot, max, minLeft, cache)
+			}
+			// Always try to construct no robot
+			runRecurse(blueprint, newRobots, newRocks, -1, max, minLeft, cache)
 		}
-		if canConstruct(1, bp, newRocks) && getClay(newRobots) < bp[4] {
-			runRecurse(bp, newRobots, consumeRocks(1, bp, newRocks), 1, max, minLeft)
-		}
-		if canConstruct(0, bp, newRocks) && getOre(newRobots) < bp[7] {
-			runRecurse(bp, newRobots, consumeRocks(0, bp, newRocks), 0, max, minLeft)
-		}
-		runRecurse(bp, newRobots, newRocks, -1, max, minLeft)
 	}
 }
 
-// Helper functions to parse the uint64 rocks/robots counts
-
-func getOre(rocks uint32) int {
-	return int(rocks & 0xFF)
+// Helper functions to parse the uint32 rocks/robots counts
+func ore(rocks uint32) uint32 {
+	return rocks & 0xFF
 }
-
-func getClay(rocks uint32) int {
-	return int((rocks >> 8) & 0xFF)
+func clay(rocks uint32) uint32 {
+	return (rocks >> 8) & 0xFF
 }
-
-func getObsidian(rocks uint32) int {
-	return int((rocks >> 16) & 0xFF)
+func obsidian(rocks uint32) uint32 {
+	return (rocks >> 16) & 0xFF
 }
-
-func getGeodes(rocks uint32) int {
-	return int((rocks >> 24) & 0xFF)
+func geodes(rocks uint32) uint32 {
+	return (rocks >> 24) & 0xFF
 }
 
 /**
  * Kicks off the recursive algorithm with initial values.
  */
-func runBlueprint(bp []int, time int, c chan int) {
-	var robots uint32
-	robots = 0x00000001 // Start with 1 ore-collecting robot
-	var rocks uint32
-	rocks = 0x00000000 // Always starts at 0 resources
-	max := 0
+func runBlueprint(blueprint []uint32, time int, c chan uint32) {
+	var robots uint32 = 0x00000001 // Start with 1 ore-collecting robot
+	var rocks uint32 = 0x00000000  // Always starts at 0 resources
+	var max uint32 = 0
+	var cache map[string]bool = make(map[string]bool)
 
-	runRecurse(bp, robots, rocks, -1, &max, time)
+	runRecurse(blueprint, robots, rocks, -1, &max, time, cache)
 
 	// The return value is dependent on part 1 vs. part 2
 	if time == 24 { // Part 1
-		c <- (max * bp[0])
+		c <- (max * blueprint[0])
 	} else { // Part 2
 		c <- max
 	}
@@ -249,11 +260,11 @@ func main() {
 	blueprints := parseInput(inputFile)
 
 	// Set up the multithreading!
-	c := make(chan int)
+	c := make(chan uint32)
 
 	// Now go through each blueprint and create a run!
 	start := time.Now()
-	sum := 0
+	var sum uint32 = 0
 	for b := 0; b < len(blueprints); b++ {
 		go runBlueprint(blueprints[b], 24, c)
 	}
@@ -266,12 +277,12 @@ func main() {
 	// but we have 32 minutes to collect
 	start = time.Now()
 	runs := int(math.Min(3, float64(len(blueprints))))
-	product := 1
+	var product uint32 = 1
 	for b := 0; b < runs; b++ {
 		go runBlueprint(blueprints[b], 32, c)
 	}
 	for b := 0; b < runs; b++ {
 		product *= <-c
 	}
-	fmt.Printf("Part 2: %d (%ds)\n", product, time.Since(start).Milliseconds())
+	fmt.Printf("Part 2: %d (%dms)\n", product, time.Since(start).Milliseconds())
 }

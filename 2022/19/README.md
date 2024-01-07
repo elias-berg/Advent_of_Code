@@ -7,7 +7,7 @@
 
 ### Performance
 
-| Part | Time |
-| ---: | ---: |
-|    1 |  15s |
-|    2 | SLOW |
+| Part |    Time |
+| ---: | ------: |
+|    1 |  2780ms |
+|    2 | 16787ms |

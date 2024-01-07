@@ -1,6 +1,3 @@
-// Advent of Code 2022 - Day 16
-// Proboscidea Volcanium
-//
 // You come across the device emitting the distress signal. Turns out
 // it's surrounded by elephants, not elves. Weird. Anyway, you scan the
 // caves and find out you're actually in a volcano and the tunnels are lines
@@ -17,12 +14,8 @@
 // open valves as well. So with the extra help, but only 26 minutes to spare,
 // what is the max flow you can release?
 
-// To run:
-// I used .NET 7.0 x64 for macOS and Mono (https://www.mono-project.com/)
-// - Use the command 'csc solution.cs' to compile
-// - Then use 'mono solution.exe' to run
-
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 // I.e. the Graph for the problem itself
@@ -130,6 +123,7 @@ public class Valve {
 }
 
 public class Solution {
+  private static Stopwatch timer;
   private static int MaxFlow1 = 0; // This big boy is our answer to Part 1
   private static int MaxFlow2 = 0; // Answer to Part 2
 
@@ -204,7 +198,7 @@ public class Solution {
       CheckMaxFlow1(newFlow);
       return;
     }
-    
+
     // Otherwise, increase the total flow by the amount of time it took to get here
     newMinutesLeft = minutesLeft - time;
     newFlow = curFlow + (Valve.TotalFlow * time);
@@ -244,7 +238,8 @@ public class Solution {
     }
 
     // Output it already!
-    System.Console.WriteLine("Part 1: " + Solution.MaxFlow1);
+    timer.Stop();
+    System.Console.WriteLine("Part 1: " + Solution.MaxFlow1 + " (" + timer.Elapsed.Milliseconds + "ms)");
   }
 
   // This function handles opening only one valve.
@@ -253,11 +248,11 @@ public class Solution {
     int newMinutesLeft = minutesLeft - 1; // Time taken to open a valve
     int newFlow = curFlow + Valve.TotalFlow;
     CheckMaxFlow2(newFlow);
-    
+
     if (newMinutesLeft == 0) {
       return;
     }
-    
+
     // Whoever is at 0 minutes left is the one that opened the valve, but then we
     // need to make sure to decrement the other's remaining time by a minute.
     if (myT == 0) {
@@ -283,7 +278,7 @@ public class Solution {
           TryDoubleFlowSequence(c, newMinutesLeft, myV, myT - 1, eleNext.Name, eleNext.Weight, newFlow);
         }
       }
-      
+
       newFlow = newFlow + (Valve.TotalFlow * newMinutesLeft);
       CheckMaxFlow2(newFlow);
 
@@ -296,11 +291,11 @@ public class Solution {
     int newMinutesLeft = minutesLeft - 1;
     int newFlow = curFlow + Valve.TotalFlow;
     CheckMaxFlow2(newFlow);
-    
+
     if (newMinutesLeft == 0) {
       return;
     }
-    
+
     Valve mine = GetValve(myV, c);
     mine.OpenValve();
     Valve elephant = GetValve(eV, c);
@@ -357,6 +352,8 @@ public class Solution {
 
   // Basically the same as Part 1, but we have an elephant also opening valves
   public static void Part2(Cave cave) {
+    timer.Start();
+
     // Starting at AA, recurse through the list to find the max flow.
     Valve aa = GetValve("AA", cave);
     foreach (NextValve myValve in aa.OtherValves.Values) {
@@ -370,27 +367,36 @@ public class Solution {
     }
 
     // Output it already!
-    System.Console.WriteLine("Part 2: " + Solution.MaxFlow2);
+    timer.Stop();
+    System.Console.WriteLine("Part 2: " + Solution.MaxFlow2 + " (" + timer.Elapsed.Milliseconds + "ms)");
   }
 
   public static void Main(string[] args) {
-        string[] lines = System.IO.File.ReadAllLines("input.txt");
-        Cave cave = new Cave(lines);
-        //System.Console.WriteLine(cave.ToString());
-
-        // Construct the graph! We want each valve that has a flow value to contain
-        // a reference to all the other valves and the minute-cost (weight) to get there.
-        Valve v;
-        cave.ValueValves.Add("AA"); // Add the starting point (always has a rate of 0)
-        foreach (string vName in cave.ValueValves) {
-          v = null;
-          cave.Valves.TryGetValue(vName, out v);
-          SetShortestDistanceToOtherValueValves(v, cave);
-          //System.Console.WriteLine(v.ValvesString());
-        }
-        cave.ValueValves.RemoveAt(cave.ValueValves.Count - 1); // Remove "AA" in O(1)
-
-        Part1(cave);
-        Part2(cave);
+    string fileName = "input.txt";
+    if (args.Length == 1 && args[0] == "-sample") {
+      fileName = "sample_input.txt";
     }
+    string[] lines = System.IO.File.ReadAllLines(fileName);
+
+    timer = new Stopwatch();
+    timer.Start(); // Start the timer now because parsing the input into a graph counts
+
+    Cave cave = new Cave(lines);
+    //System.Console.WriteLine(cave.ToString());
+
+    // Construct the graph! We want each valve that has a flow value to contain
+    // a reference to all the other valves and the minute-cost (weight) to get there.
+    Valve v;
+    cave.ValueValves.Add("AA"); // Add the starting point (always has a rate of 0)
+    foreach (string vName in cave.ValueValves) {
+      v = null;
+      cave.Valves.TryGetValue(vName, out v);
+      SetShortestDistanceToOtherValueValves(v, cave);
+      //System.Console.WriteLine(v.ValvesString());
+    }
+    cave.ValueValves.RemoveAt(cave.ValueValves.Count - 1); // Remove "AA" in O(1)
+
+    Part1(cave);
+    Part2(cave);
+  }
 }

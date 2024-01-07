@@ -1,4 +1,4 @@
-# [Advent of Code 2021 - Day 4](https://adventofcode.com/2021/day/4) - Giant Squid
+# [Advent of Code 2022 - Day 23](https://adventofcode.com/2022/day/23) - Unstable Diffusion
 
 ### [solution.cs](./solution.cs)
 - Install [Mono](https://www.mono-project.com/)
@@ -8,7 +8,7 @@
 
 ### Performance
 
-| Part | Time |
-| ---: | ---: |
-|    1 | 10ms |
-|    2 |  1ms |
+| Part |  Time |
+| ---: | ----: |
+|    1 | 132ms |
+|    2 | 732ms |

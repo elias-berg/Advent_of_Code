@@ -1,6 +1,3 @@
-// Advent of Code 2022 - Day 19
-// Not Enough Minerals
-//
 // The lava stops flowing in your direction, so now you can escape with the elephants.
 // However, you notice a pond with geodes you'd like to collect. In order to make a
 // geode-cracking robot, you need obsidian. In order to get obsidian, you need an
@@ -21,11 +18,6 @@
 // part of the elephants' meal was most of the blueprints, so you only have the first three
 // blueprints left. What is the product of all three blueprints' max number of geodes?
 
-// To run:
-// - Make sure you have Go installed on your machine
-// - Use the command: 'go run solution.go'
-// - Additionally, you can add '-sample' to run the sample input: 'go run solution.go -sample'
-
 package main
 
 import (
@@ -35,6 +27,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func maxOf(num ...int) int {
@@ -92,10 +85,12 @@ func parseInput(fileName string) [][]int {
 
 		// Not the prettiest way to write it
 		var blueprint []int
-		for m := 0; m < len(matches); m++ {
+		for m := 0; m < len(matches); m++ { // This should be of length 6 (bp#, ore, ore, ore, clay, ore, ob)
 			val, _ := strconv.Atoi(matches[m]) // We expect no errors here
 			blueprint = append(blueprint, val)
 		}
+		// At index 1, 2, 3, and 5, we see get the amounts of standard ore to make a robot,
+		// so this is putting the max number of ore to make any robot into that 7th index of `blueprints`
 		blueprint = append(blueprint, maxOf(blueprint[1], blueprint[2], blueprint[3], blueprint[5]))
 
 		blueprints = append(blueprints, blueprint)
@@ -257,7 +252,7 @@ func main() {
 	c := make(chan int)
 
 	// Now go through each blueprint and create a run!
-	//start := time.Now()
+	start := time.Now()
 	sum := 0
 	for b := 0; b < len(blueprints); b++ {
 		go runBlueprint(blueprints[b], 24, c)
@@ -265,12 +260,11 @@ func main() {
 	for b := 0; b < len(blueprints); b++ {
 		sum += <-c
 	}
-	fmt.Printf("Part 1: %d\n", sum)
-	//fmt.Printf("(Ran in %fs)\n", time.Since(start).Seconds())
+	fmt.Printf("Part 1: %d (%dms)\n", sum, time.Since(start).Milliseconds())
 
 	// Part 2 is the same as part 1, but we only have the first three blueprints,
 	// but we have 32 minutes to collect
-	//start = time.Now()
+	start = time.Now()
 	runs := int(math.Min(3, float64(len(blueprints))))
 	product := 1
 	for b := 0; b < runs; b++ {
@@ -279,6 +273,5 @@ func main() {
 	for b := 0; b < runs; b++ {
 		product *= <-c
 	}
-	fmt.Printf("Part 2: %d\n", product)
-	//fmt.Printf("(Ran in %fs)\n", time.Since(start).Seconds())
+	fmt.Printf("Part 2: %d (%ds)\n", product, time.Since(start).Milliseconds())
 }

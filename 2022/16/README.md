@@ -1,4 +1,4 @@
-# [Advent of Code 2021 - Day 4](https://adventofcode.com/2021/day/4) - Giant Squid
+# [Advent of Code 2022 - Day 16](https://adventofcode.com/2022/day/16) - Proboscidea Volcanium
 
 ### [solution.cs](./solution.cs)
 - Install [Mono](https://www.mono-project.com/)
@@ -8,7 +8,9 @@
 
 ### Performance
 
-| Part | Time |
-| ---: | ---: |
-|    1 | 10ms |
-|    2 |  1ms |
+| Part |  Time |
+| ---: | ----: |
+|    1 | 418ms |
+|    2 |  SLOW |
+
+**This solution has *serious* performance problems.**

@@ -1,4 +1,4 @@
-# [Advent of Code 2021 - Day 4](https://adventofcode.com/2021/day/4) - Giant Squid
+# [Advent of Code 2022 - Day 9](https://adventofcode.com/2022/day/9) - Rope Bridge
 
 ### [solution.cs](./solution.cs)
 - Install [Mono](https://www.mono-project.com/)
@@ -10,5 +10,5 @@
 
 | Part | Time |
 | ---: | ---: |
-|    1 | 10ms |
-|    2 |  1ms |
+|    1 | 33ms |
+|    2 | 11ms |

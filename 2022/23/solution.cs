@@ -1,6 +1,3 @@
-// Advent of Code 2022 - Day 23
-// Unstable Diffusion
-//
 // You meet back up with the elves where the starfruit grove is supposed to
 // be! But...there's no starfruit, so the elves elect to plant seeds in the
 // grove. They're frantic and decide to bustle around like so:
@@ -22,12 +19,8 @@
 // Part 2 -
 // What is the first turn number where no elves move?
 
-// To run:
-// I used .NET 7.0 x64 for macOS and Mono (https://www.mono-project.com/)
-// - Use the command 'csc solution.cs' to compile
-// - Then use 'mono solution.exe' to run
-
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 
 public class Elf {
@@ -149,13 +142,15 @@ public class Elf {
 }
 
 public class solution {
-
   public static void Main(string[] args) {
     // Step 0: which input file?
     string inputFile = "input.txt";
     if (args.Length == 1 && args[0] == "-sample") {
       inputFile = "sample_input.txt";
     }
+
+    Stopwatch timer = new Stopwatch();
+    timer.Start();
 
     // Step 1: parse the input
     List<Elf> elves = new List<Elf>();
@@ -196,9 +191,11 @@ public class solution {
     }
     int w = (xMax - xMin) + 1; // Don't forget to account for 0!
     int h = (yMax - yMin) + 1;
-    System.Console.WriteLine("Part 1: " + ((w * h) - elves.Count));
+    timer.Stop();
+    System.Console.WriteLine("Part 1: " + ((w * h) - elves.Count) + " (" + timer.Elapsed.Milliseconds + "ms)");
 
     // Step 4: continue moving elves around the grid for part 2
+    timer.Start();
     while (oneMoved) {
       oneMoved = false; // Set to false for each iteration
       foreach (Elf e in elves) {
@@ -209,6 +206,7 @@ public class solution {
       }
       moveNum++; // Because we need the first turn that NO elves moved
     }
-    System.Console.WriteLine("Part 2: " + moveNum);
+    timer.Stop();
+    System.Console.WriteLine("Part 2: " + moveNum + " (" + timer.Elapsed.Milliseconds + "ms)");
   }
 }

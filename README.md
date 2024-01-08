@@ -38,6 +38,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 | *2*  | [Dive!](./2021/2)                    | Go         |
 | *3*  | [Binary Diagnostic](./2021/3)        | Python     |
 | *4*  | [Giant Squid](./2021/4)              | C#         |
+| *5*  | [Hydrothermal Vents](./2021/5)       | Rust       |
 
 ### Scripts
 

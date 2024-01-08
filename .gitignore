@@ -3,6 +3,9 @@
 .clj-kondo/
 .lsp/
 
+# Rust output
+solution
+
 # C# output
 *.exe
 

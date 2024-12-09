@@ -4,6 +4,24 @@
 
 For-fun repository filled with Eli's attempts at solving [Advent of Code](www.adventofcode.com) problems.
 
+### 2024
+
+This year, in honor of joining Klaviyo, I wanted to brush up on my Python and incorporate Django. The year is a single django project where each day is a separate app. Each app then has two primary endpoints, for part 1 and part 2.
+
+The Makefile at the root can kick off the web server at `localhost:8000` via
+```shell
+make 2024
+```
+
+#### To Do
+- Create a view to query each day and part.
+- Add a parameter to the request body to use the sample input.
+- Make a generic class to represent a day.
+- Auto-generate the links in the view.
+- Possibly make each day have its own view to show performance?
+
+### 2022
+
 To approach each problem, I try to use a different language, though not necessarily the best language suited to the task at hand. This is more to practice with multiple languages. For example, [2022 Day 15's solution](./2022/15/solution.clj) made me seriously regret using Clojure as it would have been significantly easier with a language like Python.
 
 Each solution file contains two main parts:
@@ -11,8 +29,6 @@ Each solution file contains two main parts:
 - The solution to the problem at hand
 
 Also, note that the solution directories also provide "sample_input.txt". This is the input provided by the problem on the Advent of Code site, used for testing solutions.
-
-### 2022
 
 | Day  | Name                                 | Language   | Day  | Name                                  | Language   |
 | ---- | ------------------------------------ | ---------- | ---- | ------------------------------------- | ---------- |
@@ -32,6 +48,8 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 
 ### 2021
 
+I actually started this year after I completed 2022, so it's continuation of the pattern of using any language I felt like for each problem.
+
 | Day  | Name                                 | Language   |
 | ---- | ------------------------------------ | ---------- |
 | *1*  | [Sonar Sweep](./2021/1)              | Clojure    |
@@ -45,5 +63,7 @@ Also, note that the solution directories also provide "sample_input.txt". This i
 There's also a scripts directory that provides the following script(s) and how to run them:
 
 `python3 ./scripts/create_template.py`
+
+**Important Note:** This script is only meant for 2022 and 2021. It doesn't (yet?) have special handling for 2024 where days are new django apps.
 
 *Creates a template for the year and day of the problem to solve and language I'll try to use.*

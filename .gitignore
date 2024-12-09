@@ -22,3 +22,6 @@ dist/
 .envrc
 
 .vscode/
+
+# 2024 django caching
+**/__pycache__/

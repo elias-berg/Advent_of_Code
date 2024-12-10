@@ -129,8 +129,18 @@ else:
   
   # Special treatment for 2024 - Django app
   if year == "2024":
-    io.open("part1.py", "w").close()
-    io.open("urls.py", "w").close()
+    file = io.open("solution.py", "w")
+    file.write(f"from template.Solution import Solution\n\n\
+               class Day{day[3:]}Solution(Solution):\n\n\
+                \tdef __init__(self):\n\
+                \t\tsuper().__init__({day[3:]})\n\
+                \t\tself.part1 = True\n\n\
+                \tdef Part1(self):\n\
+                \t\tinput = self.readInput()\n\
+                return 0\n\n\
+                \tpass\n\n\
+                urlpatterns = Day{day[3:]}Solution().urls()")
+    file.close()
 
 
 #########################

@@ -6,13 +6,13 @@ from django.urls import path
 class Solution:
   def __init__(self, day):
     self.day = f"day{day}"
-    self.part1Done = False
-    self.part2Done = False
+    self.part1 = False
+    self.part2 = False
 
-  def part1(self):
+  def Part1(self):
     return 0
   
-  def part2(self):
+  def Part2(self):
     return 0
 
   def readInput(self, fileName="input.txt"):
@@ -21,8 +21,8 @@ class Solution:
   
   def urls(self):
     parts = []
-    if self.part1Done:
-      parts.append(path("part1", lambda _: HttpResponse(self.part1()), name="part1"))
-    if self.part2Done:
-      parts.append(path("part2", lambda _: HttpResponse(self.part2()), name="part2"))
+    if self.part1:
+      parts.append(path("part1", lambda _: HttpResponse(self.Part1()), name="part1"))
+    if self.part2:
+      parts.append(path("part2", lambda _: HttpResponse(self.Part2()), name="part2"))
     return parts

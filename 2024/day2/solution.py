@@ -3,6 +3,8 @@ from template.Solution import Solution
 class Day2Solution(Solution):
   def __init__(self):
     super().__init__(2)
+    self.part1 = True
+    self.part2 = True
 
   def isReportSafe(self, report):
     diff = 0
@@ -13,7 +15,7 @@ class Day2Solution(Solution):
       diff = newDiff
     return True
 
-  def part1(self):
+  def Part1(self):
     lines = self.readInput()
 
     cnt = 0
@@ -23,7 +25,7 @@ class Day2Solution(Solution):
         cnt = cnt + 1
     return cnt
   
-  def part2(self):
+  def Part2(self):
     lines = self.readInput()
 
     cnt = 0
@@ -39,8 +41,9 @@ class Day2Solution(Solution):
           if self.isReportSafe(nums2):
             cnt = cnt + 1
             break
-
-
     return cnt
   
+  # No need to implement anything else
   pass
+
+urlpatterns = Day2Solution().urls()

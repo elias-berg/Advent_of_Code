@@ -94,7 +94,7 @@ def getInput(prompt, options):
 
 # Year
 
-yearAry = list(map(str, range(2015, 2023)))
+yearAry = list(map(str, range(2015, 2025)))
 year = getInput("What year?\n(" + ", ".join(yearAry) + ")\n", yearAry)
 
 # Day
@@ -107,7 +107,8 @@ day = getInput("What day?\n(" + ", ".join(dayAry) + ")\n", dayAry)
 langAry = []
 for key in supported_languages.keys():
   langAry.append(key)
-lang = getInput("What language?\n(" + ", ".join(langAry) + ")\n", langAry)
+if year != "2024":
+  lang = getInput("What language?\n(" + ", ".join(langAry) + ")\n", langAry)
 
 ########################
 # Create the directories
@@ -116,11 +117,21 @@ if year not in os.listdir():
   os.mkdir(year)
 os.chdir(year)
 
+if year == "2024":
+  day = "day" + day
+
 if day in os.listdir():
   print("A solution directory already exists for " + year + " day " + day + ".")
   sys.exit(0)
-os.mkdir(day)
-os.chdir(day)
+else:
+  os.mkdir(day)
+  os.chdir(day)
+  
+  # Special treatment for 2024 - Django app
+  if year == "2024":
+    io.open("part1.py", "w").close()
+    io.open("urls.py", "w").close()
+
 
 #########################
 # Get the current problem
@@ -141,36 +152,37 @@ print("--> Loaded day: \"" + problemName + "\"") # Print the name for display
 ############################################
 # Generate the README and code template file
 
-template = supported_languages[lang]
-comment = template["comment"]
-codeFileName = "solution" + template["ext"]
+if year != "2024":
+  template = supported_languages[lang]
+  comment = template["comment"]
+  codeFileName = "solution" + template["ext"]
 
-# Write the standard README
-readme = io.open("README.md", "w")
-readme.writelines(
-  ["# [Advent of Code " + year + " - Day " + day + "](https://adventofcode.com/" + year + "/day/" + day + ") - " + problemName + "\n",
-   "\n",
-   "### [" + codeFileName + "](./" + codeFileName + ")\n",
-   template["instructions"] + "\n",
-   "\n",
-   "### Performance\n",
-   "\n",
-   "| Part | Time |\n",
-   "| ---: | ---: |\n"
-   "|    1 |      |\n",
-   "|    2 |      |\n"])
-readme.close()
+  # Write the standard README
+  readme = io.open("README.md", "w")
+  readme.writelines(
+    ["# [Advent of Code " + year + " - Day " + day + "](https://adventofcode.com/" + year + "/day/" + day + ") - " + problemName + "\n",
+    "\n",
+    "### [" + codeFileName + "](./" + codeFileName + ")\n",
+    template["instructions"] + "\n",
+    "\n",
+    "### Performance\n",
+    "\n",
+    "| Part | Time |\n",
+    "| ---: | ---: |\n"
+    "|    1 |      |\n",
+    "|    2 |      |\n"])
+  readme.close()
 
-# Write the code file stub
-# Add any additional header info if the language uses it,
-# e.g. the python usr/bin line to run the file as a script
-code = io.open(codeFileName, "w")
-if "pre" in template:
-  code.write(template["pre"])
-# Add any post-summary info, like run instructions
-if "post" in template:
-  code.write(template["post"])
-code.close()
+  # Write the code file stub
+  # Add any additional header info if the language uses it,
+  # e.g. the python usr/bin line to run the file as a script
+  code = io.open(codeFileName, "w")
+  if "pre" in template:
+    code.write(template["pre"])
+  # Add any post-summary info, like run instructions
+  if "post" in template:
+    code.write(template["post"])
+  code.close()
 
 # Input file
 if "SESSION" in os.environ and len(os.environ["SESSION"]) > 0:

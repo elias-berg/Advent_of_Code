@@ -1,6 +1,5 @@
 
 import os
-import math
 from django.conf import settings
 
 dir = "day1/"

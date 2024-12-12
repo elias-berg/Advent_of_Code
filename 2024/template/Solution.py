@@ -5,7 +5,7 @@ from django.urls import path
 
 class Solution:
   def __init__(self, day):
-    self.day = f"day{day}"
+    self.day = f"day{day}" # For reading the input files
     self.part1 = False
     self.part2 = False
 

@@ -9,17 +9,17 @@ class Solution:
     self.part1 = False
     self.part2 = False
 
-  def Part1(self):
+  def Part1(self) -> int:
     return 0
   
-  def Part2(self):
+  def Part2(self) -> int:
     return 0
 
-  def readInput(self, fileName="input.txt"):
+  def readInput(self, fileName="input.txt") -> str:
     input = open(os.path.join(settings.BASE_DIR, self.day + "/" + fileName))
     return input.read().split("\n")
   
-  def urls(self):
+  def urls(self) -> list:
     parts = []
     if self.part1:
       parts.append(path("part1", lambda _: HttpResponse(self.Part1()), name="part1"))

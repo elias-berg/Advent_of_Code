@@ -19,6 +19,14 @@ class Solution:
     input = open(os.path.join(settings.BASE_DIR, self.day + "/" + fileName))
     return input.read().split("\n")
   
+  # Since some days the input is a 2D grid, this shortcut will convert it directly
+  def readInputAsGrid(self, fileName="input.txt") -> list:
+    input = self.readInput(fileName)
+    grid = []
+    for row in input:
+      grid.append(list(map(str, row)))
+    return grid
+  
   def urls(self) -> list:
     parts = []
     if self.part1:

@@ -132,13 +132,13 @@ else:
     file = io.open("solution.py", "w")
     file.write("from template.Solution import Solution\n\n" +
                 "class Day" + day[3:] + "Solution(Solution):\n" +
-                "\tdef __init__(self):\n" +
-                "\t\tsuper().__init__(" + day[3:] + ")\n" +
-                "\t\tself.part1 = True\n\n" +
-                "\tdef Part1(self):\n" +
-                "\t\tinput = self.readInput()\n" +
-                "\t\treturn 0\n\n" +
-                "\tpass\n\n" +
+                "  def __init__(self):\n" +
+                "    super().__init__(" + day[3:] + ")\n" +
+                "    self.part1 = True\n\n" +
+                "  def Part1(self):\n" +
+                "    input = self.readInput()\n" +
+                "    return 0\n\n" +
+                "  pass\n\n" +
                 "urlpatterns = Day" + day[3:] + "Solution().urls()")
     file.close()
 

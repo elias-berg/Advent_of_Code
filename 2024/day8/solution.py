@@ -25,12 +25,12 @@ class Bounds:
   
   def hasPoint(self, p: Point) -> bool:
     return p.x >= self.minX and p.x <= self.maxX and p.y >= self.minY and p.y <= self.maxY
-    
 
 class Day8Solution(Solution):
   def __init__(self):
     super().__init__(8)
     self.part1 = True
+    self.part2 = True
 
   def Part1(self):
     grid = self.readInputAsGrid()
@@ -64,6 +64,47 @@ class Day8Solution(Solution):
           if bounds.hasPoint(p2): antinodeDict[str(p2)] = True
     return len(antinodeDict)
   
+  # This is nearly the same as Part 1, except we don't just create one point for each pair,
+  # we keep trying to create points until they hit outside the bounds of the grid
+  def Part2(self):
+    grid = self.readInputAsGrid()
+    nodeDict = {}
+    maxY = len(grid)
+    maxX = len(grid[0])
+    bounds = Bounds(0, 0, maxX-1, maxY-1)
+    for y in range(0, maxY):
+      for x in range(0, maxX):
+        val = grid[y][x]
+        if val != ".":
+          if val not in nodeDict:
+            nodeDict[val] = []
+          nodeDict[val].append(Point(x, y))
+    antinodeDict = {}
+    for key in nodeDict:
+      nodes = nodeDict[key]
+      nodeCount = len(nodes)
+      while len(nodes) > 0:
+        curNode = nodes.pop(0)
+        for otherNode in nodes:
+          xDiff = curNode.x - otherNode.x
+          yDiff = curNode.y - otherNode.y
+          # Here is where the difference lies...
+          # Keep trying to add points in each direction until you go off-grid
+          # But also, count the nodes themselves since there's at least two or else
+          # we wouldn't get this far
+          antinodeDict[str(curNode)] = True
+          p1 = Point(curNode.x + xDiff, curNode.y + yDiff)
+          while bounds.hasPoint(p1):
+            antinodeDict[str(p1)] = True
+            p1 = Point(p1.x + xDiff, p1.y + yDiff)
+          
+          antinodeDict[str(otherNode)] = True
+          p2 = Point(otherNode.x - xDiff, otherNode.y - yDiff)
+          while bounds.hasPoint(p2):
+            antinodeDict[str(p2)] = True
+            p2 = Point(p2.x - xDiff, p2.y - yDiff)
+    return len(antinodeDict)
+
   pass
 
 urlpatterns = Day8Solution().urls()

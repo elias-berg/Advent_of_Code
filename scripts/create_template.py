@@ -194,23 +194,8 @@ if year != "2024":
     code.write(template["post"])
   code.close()
 
-# Input file
-if "SESSION" in os.environ and len(os.environ["SESSION"]) > 0:
-  sessionID = os.environ["SESSION"] # Pull it from an environment variable
-  if len(sessionID) > 0:
-    subprocess.call([
-      "curl",
-      "https://adventofcode.com/" + year + "/day/" + day + "/input",
-      "--cookie",
-      "session=" + sessionID,
-      "-o",
-      "input.txt",
-      "-s",
-      "-w",
-      "--> Downloaded input.txt"
-    ])
-else:
-  print("\nTo download specific problem inputs, add your Advent of Code " \
-  "\"session\" cookie as an environment variable.\n")
+# Just create blank input files
+io.open("input.txt", "w").close()
+io.open("sample_input.txt", "w").close()
 
 print("\n== DONE ==\n")

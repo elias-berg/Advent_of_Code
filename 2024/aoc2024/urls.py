@@ -14,19 +14,17 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
+import os
+import re
 
-urlpatterns = [
-    #path('admin/', admin.site.urls),
-    path("day1/", include("day1.solution")),
-    path("day2/", include("day2.solution")),
-    path("day3/", include("day3.solution")),
-    path("day4/", include("day4.solution")),
-    path("day5/", include("day5.solution")),
-    path("day6/", include("day6.solution")),
-    path("day7/", include("day7.solution")),
-    path("day8/", include("day8.solution")),
-    path("day9/", include("day9.solution")),
-    path("day10/", include("day10.solution"))
-]
+# Just use Regex to tell what days are ready to be served
+dirs = os.listdir(settings.BASE_DIR)
+days = list(filter(lambda dir: not re.match("^day\d*", dir) == None, dirs))
+urlpatterns = list(map(lambda day: path(f"{day}/", include(f"{day}.solution")), days))
+
+# urlpatterns.append(
+#   path('admin/', admin.site.urls),
+# )

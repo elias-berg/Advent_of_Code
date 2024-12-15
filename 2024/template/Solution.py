@@ -21,11 +21,11 @@ class Solution:
     return input.read().split("\n")
   
   # Since some days the input is a 2D grid, this shortcut will convert it directly
-  def readInputAsGrid(self, useSample=False) -> list:
+  def readInputAsGrid(self, asInt=False, useSample=False) -> list:
     input = self.readInput(useSample)
     grid = []
     for row in input:
-      grid.append(list(map(str, row)))
+      grid.append(list(map(int if asInt else str, row)))
     return grid
   
   def urls(self) -> list:

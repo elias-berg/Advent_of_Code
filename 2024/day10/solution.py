@@ -4,10 +4,10 @@ def dfs(grid, r, c, map):
   # Only add to the trail count if we haven't seen this top position yet
   if grid[r][c] == 9:
     pos = f"{r},{c}"
-    if pos in map:
+    if map is not None and pos in map:
       return 0
     else:
-      map[pos] = True
+      if map is not None: map[pos] = True
       return 1
   # Evaluate each direction: up, down, left, and right
   val = 0
@@ -25,6 +25,7 @@ class Day10Solution(Solution):
   def __init__(self):
     super().__init__(10)
     self.part1 = True
+    self.part2 = True
 
   def Part1(self):
     grid = self.readInputAsGrid(asInt=True)
@@ -35,7 +36,17 @@ class Day10Solution(Solution):
         if grid[r][c] == 0:
           # We hit a trailhead!
           cnt = cnt + dfs(grid, r, c, {})
+    return cnt
 
+  def Part2(self):
+    grid = self.readInputAsGrid(asInt=True)
+    # Find all trailheads and do a DFS from there
+    cnt = 0
+    for r in range(0, len(grid)):
+      for c in range(0, len(grid[r])):
+        if grid[r][c] == 0:
+          # We hit a trailhead!
+          cnt = cnt + dfs(grid, r, c, None)
     return cnt
 
   pass

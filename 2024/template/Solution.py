@@ -15,7 +15,7 @@ class Solution:
   def Part2(self) -> int:
     return 0
 
-  def readInput(self, useSample=False, sampleNum="") -> str:
+  def readInput(self, useSample=False, sampleNum="") -> list[str]:
     fileName = "input.txt" if useSample == False else f"sample_input{sampleNum}.txt"
     input = open(os.path.join(settings.BASE_DIR, self.day + "/" + fileName))
     return input.read().split("\n")

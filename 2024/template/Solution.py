@@ -15,14 +15,14 @@ class Solution:
   def Part2(self) -> int:
     return 0
 
-  def readInput(self, useSample=False) -> str:
-    fileName = "input.txt" if useSample == False else "sample_input.txt"
+  def readInput(self, useSample=False, sampleNum="") -> str:
+    fileName = "input.txt" if useSample == False else f"sample_input{sampleNum}.txt"
     input = open(os.path.join(settings.BASE_DIR, self.day + "/" + fileName))
     return input.read().split("\n")
   
   # Since some days the input is a 2D grid, this shortcut will convert it directly
-  def readInputAsGrid(self, asInt=False, useSample=False) -> list:
-    input = self.readInput(useSample)
+  def readInputAsGrid(self, asInt=False, useSample=False, sampleNum="") -> list:
+    input = self.readInput(useSample, sampleNum)
     grid = []
     for row in input:
       grid.append(list(map(int if asInt else str, row)))

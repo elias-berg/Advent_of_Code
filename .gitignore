@@ -25,3 +25,4 @@ dist/
 
 # 2024 django caching
 **/__pycache__/
+tmp/
